@@ -17,3 +17,24 @@ def som_morreu():
         time.sleep(tempo[i] / 1000)
         buzzer.duty_u16(0)
         time.sleep(10 / 1000)  # pausa breve entre as notas
+
+
+def som_explosao():
+    explosion_tones = [100, 150, 200, 250, 300, 200, 100]  # Frequencies to simulate explosion
+
+    for tone in explosion_tones:
+        buzzer.freq(tone)
+        buzzer.duty_u16(32768)  # Set the duty cycle to 50%
+        time.sleep(0.1)  # pausa breve entre as notas
+
+    buzzer.deinit()  # Turn off the buzzer
+
+def som_agua():
+    tones = [800, 600, 400, 300, 200, 100, 50]
+
+    for tone in tones:
+        buzzer.freq(tone)
+        buzzer.duty_u16(32768)  # Set the duty cycle to 50%
+        time.sleep(0.05)  # pausa breve entre as notas
+
+    buzzer.deinit()  # Turn off the buzzer
