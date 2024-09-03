@@ -1,6 +1,9 @@
 from BitDogLib import *
+from BitDogLib.buttons import valor_botao_A
 from utime import ticks_us
 from sys import exit
+#Apenas para testes
+from time import sleep
 
 HORIZONTAL = 0
 VERTICAL = 1
@@ -76,7 +79,15 @@ def tempo_de_jogo(old):
     return (delta, old)
 
 def fase_posicionamento():
+    matriz = [[0 for _ in range(5)]for _ in range(5)]
+    barcos_restantes = 6
     for barco in barcos:
+        limpar_tela()
+        escrever_tela("FASE DE ", 0, 0)
+        escrever_tela("POSICIONAMENTO", 0, 10)
+        escrever_tela(f'{barcos_restantes} navios', 0, 20)
+        escrever_tela('Restantes', 0, 30)
+        mostrar_tela()
         old = ticks_us()
         while True:
             delta, old = tempo_de_jogo(old)
@@ -112,40 +123,44 @@ def fase_posicionamento():
             if botao_B_pressionado() and pode:
                 barco.colocado = True
                 break
-    apagar_leds()
+        barcos_restantes = barcos_restantes - 1
+    matriz = desenhar_todos_os_barcos(barcos)
+    return matriz
 
 def selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y, delta):
-    jx = joystick_x()
-    jy = joystick_y()
-    
-    if jx > 0 and tiro_x <= 4:
-        tiro_x = tiro_x + 1/250000*delta
-    if jx < 0 and tiro_x >= 0:
-        tiro_x = tiro_x - 1/250000*delta
+    while True:
+        jx = joystick_x()
+        jy = joystick_y()
         
-    
-    if jy > 0 and tiro_y <= 4:
-        tiro_y = tiro_y  + 1/250000*delta
-    if jy < 0 and tiro_y >= 0:
-        tiro_y = tiro_y - 1/250000*delta
-    
-    pode = True
-    if matriz_tiros[round(tiro_y)][round(tiro_x)] > 0:
-        ligar_led(tiro_x, tiro_y, VERMELHO)
-        pode = False
-    else:
-        ligar_led(tiro_x, tiro_y, BRANCO)
-    return tiro_x, tiro_y, pode
+        if jx > 0 and tiro_x <= 4:
+            tiro_x = tiro_x + 1/250000*delta
+        if jx < 0 and tiro_x >= 0:
+            tiro_x = tiro_x - 1/250000*delta
+            
+        
+        if jy > 0 and tiro_y <= 4:
+            tiro_y = tiro_y  + 1/250000*delta
+        if jy < 0 and tiro_y >= 0:
+            tiro_y = tiro_y - 1/250000*delta
+        
+        pode = True
+        if matriz_tiros[round(tiro_y)][round(tiro_x)] > 0:
+            ligar_led(tiro_x, tiro_y, VERMELHO)
+            pode = False
+        else:
+            ligar_led(tiro_x, tiro_y, BRANCO)
+        return tiro_x, tiro_y, pode
 
-def checar_acertou(x, y):
+def checar_acertou_ganhou(x, y):
     x = round(x)
     y = round(y)
     #return bluetooth_mandar(x,y)
     matriz_adv = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
     if matriz_adv[y][x] == 1:
-        return True
+        return True, False
     else: 
-        return False
+        return False, False
+    ########################################
 
 def desenhar_tiros(matriz_tiros, tiro_x, tiro_y):
     y = 0
@@ -160,23 +175,91 @@ def desenhar_tiros(matriz_tiros, tiro_x, tiro_y):
                 ligar_led(x,y,AZUL)
             x = x + 1
         y = y + 1
-    
-def fase_batalha():
-    matriz_tiros = [[0 for _ in range(5)]for _ in range(5)]
-    tiro_x = 0
-    tiro_y = 0
+
+def dar_tiro(matriz_tiros, tiro_x, tiro_y):
     old = ticks_us()
+    ganhou = False
+    limpar_tela()
+    escrever_tela("FASE DE ATAQUE", 0, 0)
+    mostrar_tela()
     while True:
         apagar_led(tiro_x, tiro_y)
         delta, old = tempo_de_jogo(old)
         tiro_x, tiro_y, pode = selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y, delta)
         if botao_B_pressionado() and pode:
-            acertou = checar_acertou(tiro_x, tiro_y)
-            if acertou:
-                matriz_tiros[round(tiro_y)][round(tiro_x)] = 1
+            acertou, ganhou = checar_acertou_ganhou(tiro_x, tiro_y)
+            if(ganhou):
+                break
             else:
-                matriz_tiros[round(tiro_y)][round(tiro_x)] = 2
+                if acertou:
+                    matriz_tiros[round(tiro_y)][round(tiro_x)] = 1
+                else:
+                    matriz_tiros[round(tiro_y)][round(tiro_x)] = 2
+                    break
         desenhar_tiros(matriz_tiros, tiro_x, tiro_y)
+        return ganhou
+
+def checar_perdeu(matriz_barcos):
+    y = 0
+    while y < 5:
+        x = 0
+        while x < 5:
+            if matriz_barcos[y][x] == 1:
+                return False
+            x = x + 1
+        y = y + 1
         
+    return True
     
-fase_batalha()
+def receber_tiro(matriz_barcos):
+    global barcos
+    
+    acertou = False
+    ganhou = False
+    limpar_tela()
+    escrever_tela("FASE DE DEFESA", 0, 0)
+    mostrar_tela()
+    while True:
+        desenhar_todos_os_barcos(barcos)
+        #tiro_x,tiro_y = receber_bt()
+        sleep(2)
+        tiro_x = numero_aleatorio(0,4)
+        tiro_y = numero_aleatorio(0,4)
+        ##########################
+        if matriz_barcos[tiro_y][tiro_x] == 1:
+            acertou = True
+            matriz_barcos[tiro_y][tiro_x] = 2
+        else:
+            break
+        if checar_perdeu(matriz_barcos):
+            perdeu = True
+        #enviar_bt(acertou,ganhou)
+    return acertou, ganhou
+        
+def fase_batalha(matriz_barcos):
+    matriz_tiros = [[0 for _ in range(5)]for _ in range(5)]
+    tiro_x = 0
+    tiro_y = 0
+    while True:
+        apagar_leds()
+        ganhou = dar_tiro(matriz_tiros, tiro_x, tiro_y)
+        if ganhou:
+            limpar_tela()
+            escrever_tela("GANHOU",0,0)
+            mostrar_tela()
+            #fechar_conexao
+            break
+        apagar_leds()
+        acertou,perdeu = receber_tiro(matriz_barcos)
+        if ganhou:
+            limpar_tela()
+            escrever_tela("PERDEU",0,0)
+            mostrar_tela()
+            #fechar_conexao
+            break
+        
+while True:    
+    matriz_barcos = fase_posicionamento()
+    fase_batalha(matriz_barcos)
+    while valor_botao_A():
+        pass
