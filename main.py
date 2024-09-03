@@ -4,6 +4,7 @@ from utime import ticks_us
 from sys import exit
 #Apenas para testes
 from time import sleep
+import machine
 
 HORIZONTAL = 0
 VERTICAL = 1
@@ -172,7 +173,7 @@ def checar_acertou_ganhou(x, y):
     #return bluetooth_mandar(x,y)
     matriz_adv = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
     if matriz_adv[y][x] == 1:
-        return True, False
+        return True, True
     else: 
         return False, False
     ########################################
@@ -187,6 +188,20 @@ def desenhar_tiros(matriz_tiros, tiro_x, tiro_y):
             elif matriz_tiros[y][x] == 1:
                 ligar_led(x,y, VERDE)
             elif matriz_tiros[y][x] == 2:
+                ligar_led(x,y,AZUL)
+            x = x + 1
+        y = y + 1
+
+def desenhar_matriz(matriz):
+    y = 0
+    while y < 5:
+        x = 0
+        while x < 5:
+            if matriz[y][x] == 1:
+                ligar_led(x,y, VERDE)
+            elif matriz[y][x] == 2:
+                ligar_led(x,y,VERMELHO)
+            elif matriz[y][x] == 3:
                 ligar_led(x,y,AZUL)
             x = x + 1
         y = y + 1
@@ -213,15 +228,14 @@ def checar_perdeu(matriz_barcos):
     return True
     
 def receber_tiro(matriz_barcos):
-    global barcos
-    
     acertou = False
     ganhou = False
     limpar_tela()
     escrever_tela("FASE DE DEFESA", 0, 0)
     mostrar_tela()
     while True:
-        desenhar_todos_os_barcos(barcos)
+        apagar_leds()
+        desenhar_matriz(matriz_barcos)
         #tiro_x,tiro_y = receber_bt()
         sleep(2)
         tiro_x = numero_aleatorio(0,4)
@@ -231,6 +245,9 @@ def receber_tiro(matriz_barcos):
             acertou = True
             matriz_barcos[tiro_y][tiro_x] = 2
         else:
+            matriz_barcos[tiro_y][tiro_x] = 3
+            desenhar_matriz(matriz_barcos)
+            sleep(1)
             break
         if checar_perdeu(matriz_barcos):
             perdeu = True
@@ -252,7 +269,7 @@ def fase_batalha(matriz_barcos):
             break
         apagar_leds()
         acertou,perdeu = receber_tiro(matriz_barcos)
-        if ganhou:
+        if perdeu:
             limpar_tela()
             escrever_tela("PERDEU",0,0)
             mostrar_tela()
@@ -260,8 +277,8 @@ def fase_batalha(matriz_barcos):
             break
         
 while True:    
-    # matriz_barcos = fase_posicionamento()
-    matriz_barcos = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
+    matriz_barcos = fase_posicionamento()
+    # matriz_barcos = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
     fase_batalha(matriz_barcos)
     while valor_botao_A():
-        pass
+        machine.reset()
