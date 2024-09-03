@@ -1,7 +1,6 @@
 from BitDogLib import *
 from BitDogLib.buttons import valor_botao_A
 from utime import ticks_us
-from sys import exit
 #Apenas para testes
 from time import sleep
 import machine
@@ -28,10 +27,8 @@ class Barco:
         y = round(self.y)
         while b < self.tamanho:
             if self.orientacao == HORIZONTAL:
-                ligar_led(x + b, y, VERDE)
                 matriz[y][x + b] = 1
             else:
-                ligar_led(x, y + b, VERDE)
                 matriz[y + b][x] = 1
             b = b + 1
         return matriz
@@ -45,7 +42,7 @@ barcos = [Barco(3),
           Barco(1)]
 
 def posicionando_barco(novo_barco:Barco, barcos:list[Barco]):
-    matriz = desenhar_todos_os_barcos(barcos)
+    matriz = criar_matriz_barcos(barcos)
     b = 0
     aceitavel = True
     while b < novo_barco.tamanho:
@@ -58,20 +55,26 @@ def posicionando_barco(novo_barco:Barco, barcos:list[Barco]):
         x = round(x)
         y = round(y)
         if matriz[y][x] == 1:
-            ligar_led(x, y, VERMELHO)
+            matriz[y][x] = 2
             aceitavel = False
         else:
-            ligar_led(x, y, BRANCO)
+            matriz[y][x] = 4
         b = b + 1
+    desenhar_matriz(matriz)
     return aceitavel
 
-
-def desenhar_todos_os_barcos(barcos:list[Barco]):
+def criar_matriz_barcos(barcos:list[Barco]):
     matriz = [[0 for _ in range(5)]for _ in range(5)]
     for barco in barcos:
         if barco.colocado:
             matriz = barco.desenhar(matriz)
     return matriz
+
+def desenhar_todos_os_barcos(barcos:list[Barco]):
+    matriz = criar_matriz_barcos(barcos)
+    desenhar_matriz(matriz)
+    return matriz
+
 
 def tempo_de_jogo(old):
     new = ticks_us()
@@ -203,6 +206,8 @@ def desenhar_matriz(matriz):
                 ligar_led(x,y,VERMELHO)
             elif matriz[y][x] == 3:
                 ligar_led(x,y,AZUL)
+            elif matriz[y][x] == 4:
+                ligar_led(x,y,BRANCO)
             x = x + 1
         y = y + 1
 
@@ -281,4 +286,5 @@ while True:
     # matriz_barcos = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
     fase_batalha(matriz_barcos)
     while valor_botao_A():
-        machine.reset()
+        pass
+    machine.reset()
