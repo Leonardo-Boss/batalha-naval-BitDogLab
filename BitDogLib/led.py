@@ -25,6 +25,8 @@ def ligar_led(x, y, cor):
     '''
     liga um led na posição e cor especificada
     '''
+    x = round(x)
+    y = round(y)
     if 0 > x >= ROW_SIZE:
         print("Índice x fora do intervalo. Por favor, escolha um índice de 0 a", NUM_LEDS - 1)
         return
