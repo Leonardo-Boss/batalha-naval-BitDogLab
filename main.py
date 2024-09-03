@@ -176,10 +176,15 @@ def checar_acertou_ganhou(x, y):
     #return bluetooth_mandar(x,y)
     matriz_adv = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
     if matriz_adv[y][x] == 1:
-        som_explosao()
-        return True, True
+        matriz_adv[y][x] = 2
+        acabou = True
+        for i in matriz_adv:
+            if 1 in i:
+                acabou = False
+        if acabou:
+            return True, True
+        return True, False
     else: 
-        som_agua()
         return False, False
     ########################################
 
@@ -250,19 +255,17 @@ def receber_tiro(matriz_barcos):
         ##########################
         if matriz_barcos[tiro_y][tiro_x] == 1:
             acertou = True
-            som_explosao()
             matriz_barcos[tiro_y][tiro_x] = 2
         else:
             matriz_barcos[tiro_y][tiro_x] = 3
             desenhar_matriz(matriz_barcos)
-            som_agua()
             sleep(1)
             break
         if checar_perdeu(matriz_barcos):
             perdeu = True
         #enviar_bt(acertou,ganhou)
     return acertou, ganhou
-        
+
 def fase_batalha(matriz_barcos):
     matriz_tiros = [[0 for _ in range(5)]for _ in range(5)]
     tiro_x = 0
@@ -284,10 +287,9 @@ def fase_batalha(matriz_barcos):
             mostrar_tela()
             #fechar_conexao
             break
-        
-while True:    
+
+while True:
     matriz_barcos = fase_posicionamento()
-    # matriz_barcos = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
     fase_batalha(matriz_barcos)
     while valor_botao_A():
         pass
