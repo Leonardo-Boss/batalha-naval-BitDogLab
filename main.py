@@ -176,6 +176,7 @@ def checar_acertou_ganhou(x, y):
     #return bluetooth_mandar(x,y)
     matriz_adv = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
     if matriz_adv[y][x] == 1:
+        som_explosao()
         matriz_adv[y][x] = 2
         acabou = True
         for i in matriz_adv:
@@ -185,6 +186,7 @@ def checar_acertou_ganhou(x, y):
             return True, True
         return True, False
     else: 
+        som_agua()
         return False, False
     ########################################
 
@@ -256,9 +258,11 @@ def receber_tiro(matriz_barcos):
         if matriz_barcos[tiro_y][tiro_x] == 1:
             acertou = True
             matriz_barcos[tiro_y][tiro_x] = 2
+            som_explosao()
         else:
             matriz_barcos[tiro_y][tiro_x] = 3
             desenhar_matriz(matriz_barcos)
+            som_agua()
             sleep(1)
             break
         if checar_perdeu(matriz_barcos):
