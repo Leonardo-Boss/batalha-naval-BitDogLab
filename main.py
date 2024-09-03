@@ -75,7 +75,6 @@ def desenhar_todos_os_barcos(barcos:list[Barco]):
     desenhar_matriz(matriz)
     return matriz
 
-
 def tempo_de_jogo(old):
     new = ticks_us()
     delta = abs(new - old)
@@ -115,13 +114,13 @@ def fase_posicionamento():
                 barco.x = barco.x + 1/250000*delta
             if jx < 0 and barco.x >= 0:
                 barco.x = barco.x - 1/250000*delta
-    
+
             jy = joystick_y()
             if jy > 0 and barco.y <= 5-y_end:
                 barco.y = barco.y + 1/250000*delta
             if jy < 0 and barco.y >= 0:
                 barco.y = barco.y - 1/250000*delta
-    
+
             apagar_leds()
             pode = posicionando_barco(barco, barcos)
             if botao_B_pressionado() and pode:
@@ -138,27 +137,27 @@ def selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y):
         delta, old = tempo_de_jogo(old)
         jx = joystick_x()
         jy = joystick_y()
-        
+
         if jx > 0 and tiro_x <= 4:
             tiro_x = tiro_x + 1/250000*delta
         if jx < 0 and tiro_x >= 0:
             tiro_x = tiro_x - 1/250000*delta
-            
-        
+
         if jy > 0 and tiro_y <= 4:
             tiro_y = tiro_y  + 1/250000*delta
         if jy < 0 and tiro_y >= 0:
             tiro_y = tiro_y - 1/250000*delta
-            
+
         pode = True
         if matriz_tiros[round(tiro_y)][round(tiro_x)] > 0:
             ligar_led(tiro_x, tiro_y, VERMELHO)
             pode = False
         else:
             ligar_led(tiro_x, tiro_y, BRANCO)
-        
+
         if botao_B_pressionado() and pode:
             acertou, ganhou = checar_acertou_ganhou(tiro_x, tiro_y)
+            old = ticks_us()
             if(ganhou):
                 break
             else:
@@ -170,11 +169,12 @@ def selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y):
         desenhar_tiros(matriz_tiros, tiro_x, tiro_y)
     return ganhou
 
+matriz_adv = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
 def checar_acertou_ganhou(x, y):
+    global matriz_adv
     x = round(x)
     y = round(y)
     #return bluetooth_mandar(x,y)
-    matriz_adv = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
     if matriz_adv[y][x] == 1:
         som_explosao()
         matriz_adv[y][x] = 2
