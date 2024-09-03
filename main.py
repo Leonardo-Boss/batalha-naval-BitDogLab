@@ -75,39 +75,108 @@ def tempo_de_jogo(old):
     old = new
     return (delta, old)
 
-for barco in barcos:
+def fase_posicionamento():
+    for barco in barcos:
+        old = ticks_us()
+        while True:
+            delta, old = tempo_de_jogo(old)
+            x_end = 1
+            y_end = 1
+            if botao_A_pressionado():
+                if barco.orientacao == VERTICAL:
+                    if round(barco.x) + barco.tamanho <= 5:
+                        barco.orientacao = HORIZONTAL
+                else:
+                    if round(barco.y) + barco.tamanho <= 5:
+                        barco.orientacao = VERTICAL
+    
+            if barco.orientacao == VERTICAL:
+                y_end = barco.tamanho
+            else:
+                x_end = barco.tamanho
+    
+            jx = joystick_x()
+            if jx > 0 and barco.x <= 5-x_end:
+                barco.x = barco.x + 1/250000*delta
+            if jx < 0 and barco.x >= 0:
+                barco.x = barco.x - 1/250000*delta
+    
+            jy = joystick_y()
+            if jy > 0 and barco.y <= 5-y_end:
+                barco.y = barco.y + 1/250000*delta
+            if jy < 0 and barco.y >= 0:
+                barco.y = barco.y - 1/250000*delta
+    
+            apagar_leds()
+            pode = posicionando_barco(barco, barcos)
+            if botao_B_pressionado() and pode:
+                barco.colocado = True
+                break
+    apagar_leds()
+
+def selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y, delta):
+    jx = joystick_x()
+    jy = joystick_y()
+    
+    if jx > 0 and tiro_x <= 4:
+        tiro_x = tiro_x + 1/250000*delta
+    if jx < 0 and tiro_x >= 0:
+        tiro_x = tiro_x - 1/250000*delta
+        
+    
+    if jy > 0 and tiro_y <= 4:
+        tiro_y = tiro_y  + 1/250000*delta
+    if jy < 0 and tiro_y >= 0:
+        tiro_y = tiro_y - 1/250000*delta
+    
+    pode = True
+    if matriz_tiros[round(tiro_y)][round(tiro_x)] > 0:
+        ligar_led(tiro_x, tiro_y, VERMELHO)
+        pode = False
+    else:
+        ligar_led(tiro_x, tiro_y, BRANCO)
+    return tiro_x, tiro_y, pode
+
+def checar_acertou(x, y):
+    x = round(x)
+    y = round(y)
+    #return bluetooth_mandar(x,y)
+    matriz_adv = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
+    if matriz_adv[y][x] == 1:
+        return True
+    else: 
+        return False
+
+def desenhar_tiros(matriz_tiros, tiro_x, tiro_y):
+    y = 0
+    while y < 5:
+        x = 0
+        while x < 5:
+            if x == round(tiro_x) and y == round(tiro_y):
+                pass
+            elif matriz_tiros[y][x] == 1:
+                ligar_led(x,y, VERDE)
+            elif matriz_tiros[y][x] == 2:
+                ligar_led(x,y,AZUL)
+            x = x + 1
+        y = y + 1
+    
+def fase_batalha():
+    matriz_tiros = [[0 for _ in range(5)]for _ in range(5)]
+    tiro_x = 0
+    tiro_y = 0
     old = ticks_us()
     while True:
+        apagar_led(tiro_x, tiro_y)
         delta, old = tempo_de_jogo(old)
-        x_end = 1
-        y_end = 1
-        if botao_A_pressionado():
-            if barco.orientacao == VERTICAL:
-                if round(barco.x) + barco.tamanho <= 5:
-                    barco.orientacao = HORIZONTAL
-            else:
-                if round(barco.y) + barco.tamanho <= 5:
-                    barco.orientacao = VERTICAL
-
-        if barco.orientacao == VERTICAL:
-            y_end = barco.tamanho
-        else:
-            x_end = barco.tamanho
-
-        jx = joystick_x()
-        if jx > 0 and barco.x <= 5-x_end:
-            barco.x = barco.x + 1/250000*delta
-        if jx < 0 and barco.x >= 0:
-            barco.x = barco.x - 1/250000*delta
-
-        jy = joystick_y()
-        if jy > 0 and barco.y <= 5-y_end:
-            barco.y = barco.y + 1/250000*delta
-        if jy < 0 and barco.y >= 0:
-            barco.y = barco.y - 1/250000*delta
-
-        apagar_leds()
-        pode = posicionando_barco(barco, barcos)
+        tiro_x, tiro_y, pode = selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y, delta)
         if botao_B_pressionado() and pode:
-            barco.colocado = True
-            break
+            acertou = checar_acertou(tiro_x, tiro_y)
+            if acertou:
+                matriz_tiros[round(tiro_y)][round(tiro_x)] = 1
+            else:
+                matriz_tiros[round(tiro_y)][round(tiro_x)] = 2
+        desenhar_tiros(matriz_tiros, tiro_x, tiro_y)
+        
+    
+fase_batalha()

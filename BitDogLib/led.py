@@ -43,6 +43,8 @@ def apagar_led(x, y):
     '''
     apaga um led na posição especificada
     '''
+    x = round(x)
+    y = round(y)
     if 0 > x  and x >= ROW_SIZE:
         print("Índice x fora do intervalo. Por favor, escolha um índice de 0 a", NUM_LEDS - 1)
         return
