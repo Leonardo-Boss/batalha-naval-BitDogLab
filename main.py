@@ -127,8 +127,11 @@ def fase_posicionamento():
     matriz = desenhar_todos_os_barcos(barcos)
     return matriz
 
-def selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y, delta):
+def selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y):
+    old = ticks_us()
     while True:
+        apagar_led(tiro_x, tiro_y)
+        delta, old = tempo_de_jogo(old)
         jx = joystick_x()
         jy = joystick_y()
         
@@ -142,14 +145,26 @@ def selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y, delta):
             tiro_y = tiro_y  + 1/250000*delta
         if jy < 0 and tiro_y >= 0:
             tiro_y = tiro_y - 1/250000*delta
-        
+            
         pode = True
         if matriz_tiros[round(tiro_y)][round(tiro_x)] > 0:
             ligar_led(tiro_x, tiro_y, VERMELHO)
             pode = False
         else:
             ligar_led(tiro_x, tiro_y, BRANCO)
-        return tiro_x, tiro_y, pode
+        
+        if botao_B_pressionado() and pode:
+            acertou, ganhou = checar_acertou_ganhou(tiro_x, tiro_y)
+            if(ganhou):
+                break
+            else:
+                if acertou:
+                    matriz_tiros[round(tiro_y)][round(tiro_x)] = 1
+                else:
+                    matriz_tiros[round(tiro_y)][round(tiro_x)] = 2
+                    break
+        desenhar_tiros(matriz_tiros, tiro_x, tiro_y)
+    return ganhou
 
 def checar_acertou_ganhou(x, y):
     x = round(x)
@@ -182,22 +197,8 @@ def dar_tiro(matriz_tiros, tiro_x, tiro_y):
     limpar_tela()
     escrever_tela("FASE DE ATAQUE", 0, 0)
     mostrar_tela()
-    while True:
-        apagar_led(tiro_x, tiro_y)
-        delta, old = tempo_de_jogo(old)
-        tiro_x, tiro_y, pode = selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y, delta)
-        if botao_B_pressionado() and pode:
-            acertou, ganhou = checar_acertou_ganhou(tiro_x, tiro_y)
-            if(ganhou):
-                break
-            else:
-                if acertou:
-                    matriz_tiros[round(tiro_y)][round(tiro_x)] = 1
-                else:
-                    matriz_tiros[round(tiro_y)][round(tiro_x)] = 2
-                    break
-        desenhar_tiros(matriz_tiros, tiro_x, tiro_y)
-        return ganhou
+    ganhou = selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y)
+    return ganhou
 
 def checar_perdeu(matriz_barcos):
     y = 0
@@ -259,7 +260,8 @@ def fase_batalha(matriz_barcos):
             break
         
 while True:    
-    matriz_barcos = fase_posicionamento()
+    # matriz_barcos = fase_posicionamento()
+    matriz_barcos = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
     fase_batalha(matriz_barcos)
     while valor_botao_A():
         pass
