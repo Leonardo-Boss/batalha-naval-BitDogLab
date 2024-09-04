@@ -1,4 +1,4 @@
-from .led import ligar_led, apagar_led, apagar_leds
+from .led import ligar_led, apagar_led, apagar_leds, carinha_feliz
 from .oled import limpar_tela, escrever_tela, mostrar_tela
 from .buttons import botao_A_pressionado, botao_B_pressionado
 from .buzzer import som_morreu, som_explosao, som_agua

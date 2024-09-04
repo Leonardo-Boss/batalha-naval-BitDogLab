@@ -39,6 +39,17 @@ def ligar_led(x, y, cor):
     np[indice] = cor  # Define a cor do LED específico
     np.write()  # Atualiza a matriz de LEDs para aplicar a mudança
 
+def carinha_feliz(cor):
+    apagar_leds()
+    np[LED_MAP[0][1]] = cor
+    np[LED_MAP[0][3]] = cor
+    np[LED_MAP[2][0]] = cor
+    np[LED_MAP[2][4]] = cor
+    np[LED_MAP[3][1]] = cor
+    np[LED_MAP[3][3]] = cor
+    np[LED_MAP[4][2]] = cor
+    np.write()
+
 def apagar_led(x, y):
     '''
     apaga um led na posição especificada

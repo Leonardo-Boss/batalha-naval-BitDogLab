@@ -5,6 +5,8 @@ from utime import ticks_us
 from time import sleep
 import machine
 
+from BitDogLib.led import carinha_feliz
+
 HORIZONTAL = 0
 VERTICAL = 1
 
@@ -281,6 +283,7 @@ def fase_batalha(matriz_barcos):
             limpar_tela()
             escrever_tela("GANHOU",0,0)
             mostrar_tela()
+            carinha_feliz(AZUL)
             #fechar_conexao
             break
         apagar_leds()
