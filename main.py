@@ -1,9 +1,9 @@
 from BitDogLib import *
-from BitDogLib.buttons import valor_botao_A
 from utime import ticks_us
 #Apenas para testes
 from time import sleep
 import machine
+import _thread
 
 from BitDogLib.led import carinha_feliz
 
@@ -34,6 +34,14 @@ class Barco:
                 matriz[y + b][x] = 1
             b = b + 1
         return matriz
+
+class conexao:
+    def __init__(self, wlan, conn, is_server) -> None:
+        self.wlan = wlan
+        self.conn = conn
+        self.is_server = is_server
+    
+conn = conexao(0,0, False)
 
 QUANTIDADE_DE_BARCOS = 6
 barcos = [Barco(3),
@@ -132,8 +140,10 @@ def fase_posicionamento():
     matriz = desenhar_todos_os_barcos(barcos)
     return matriz
 
-def selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y):
+def selecionar_posicao_tiro(matriz_tiros):
     old = ticks_us()
+    tiro_x = 2
+    tiro_y = 2
     while True:
         apagar_led(tiro_x, tiro_y)
         delta, old = tempo_de_jogo(old)
@@ -158,39 +168,33 @@ def selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y):
             ligar_led(tiro_x, tiro_y, BRANCO)
 
         if botao_B_pressionado() and pode:
-            acertou, ganhou = checar_acertou_ganhou(tiro_x, tiro_y)
+            acertou, acabou = checar_acertou_ganhou(tiro_x, tiro_y)
             old = ticks_us()
-            if(ganhou):
-                break
+            if acertou:
+                matriz_tiros[round(tiro_y)][round(tiro_x)] = 1
             else:
-                if acertou:
-                    matriz_tiros[round(tiro_y)][round(tiro_x)] = 1
-                else:
-                    matriz_tiros[round(tiro_y)][round(tiro_x)] = 2
-                    break
+                matriz_tiros[round(tiro_y)][round(tiro_x)] = 2
+                break
+                
+            if(acabou):
+                break
         desenhar_tiros(matriz_tiros, tiro_x, tiro_y)
-    return ganhou
+    return acabou
 
-matriz_adv = [[1, 1, 1, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 0], [1, 0, 0, 1, 0], [0, 0, 0, 1, 1]]
 def checar_acertou_ganhou(x, y):
-    global matriz_adv
     x = round(x)
     y = round(y)
-    #return bluetooth_mandar(x,y)
-    if matriz_adv[y][x] == 1:
+    
+    enviar_via_wifi(conn.conn, [x,y])
+    dado = esperar_receber()
+    acertou = dado[0]
+    acabou = dado[1]
+    print(acertou)
+    if acertou == 0:
         som_explosao()
-        matriz_adv[y][x] = 2
-        acabou = True
-        for i in matriz_adv:
-            if 1 in i:
-                acabou = False
-        if acabou:
-            return True, True
-        return True, False
-    else: 
+    elif acertou == 1: 
         som_agua()
-        return False, False
-    ########################################
+    return acertou, acabou
 
 def desenhar_tiros(matriz_tiros, tiro_x, tiro_y):
     y = 0
@@ -222,13 +226,13 @@ def desenhar_matriz(matriz):
             x = x + 1
         y = y + 1
 
-def dar_tiro(matriz_tiros, tiro_x, tiro_y):
+def dar_tiro(matriz_tiros):
     old = ticks_us()
     ganhou = False
     limpar_tela()
     escrever_tela("FASE DE ATAQUE", 0, 0)
     mostrar_tela()
-    ganhou = selecionar_posicao_tiro(matriz_tiros, tiro_x, tiro_y)
+    ganhou = selecionar_posicao_tiro(matriz_tiros)
     return ganhou
 
 def checar_perdeu(matriz_barcos):
@@ -244,60 +248,176 @@ def checar_perdeu(matriz_barcos):
     return True
     
 def receber_tiro(matriz_barcos):
-    acertou = False
-    ganhou = False
+    acertou = 0
+    acabou = 0
     limpar_tela()
     escrever_tela("FASE DE DEFESA", 0, 0)
     mostrar_tela()
     while True:
+        acertou = 0
         apagar_leds()
         desenhar_matriz(matriz_barcos)
-        #tiro_x,tiro_y = receber_bt()
-        sleep(2)
-        tiro_x = numero_aleatorio(0,4)
-        tiro_y = numero_aleatorio(0,4)
-        ##########################
+        dado = esperar_receber()
+        tiro_x = dado[0]
+        tiro_y = dado[1]
         if matriz_barcos[tiro_y][tiro_x] == 1:
-            acertou = True
+            acertou = 1
             matriz_barcos[tiro_y][tiro_x] = 2
             som_explosao()
         else:
             matriz_barcos[tiro_y][tiro_x] = 3
             desenhar_matriz(matriz_barcos)
             som_agua()
-            sleep(1)
-            break
+            
         if checar_perdeu(matriz_barcos):
-            perdeu = True
-        #enviar_bt(acertou,ganhou)
-    return acertou, ganhou
+            acabou = 1
+            
+        enviar_via_wifi(conn.conn, [acertou, acabou])
+        if acertou == 0 or acabou == 1:
+            break
+        
+    return acabou
+
+def atacar(matriz_tiros):
+    apagar_leds()
+    acabou = dar_tiro(matriz_tiros)
+    if acabou:
+        limpar_tela()
+        escrever_tela("GANHOU",0,0)
+        mostrar_tela()
+        carinha_feliz(AZUL)
+        desligar_wifi(conn.wlan, conn.is_server)
+        return True
+    return False
+
+def defender(matriz_tiros):
+    apagar_leds()
+    acabou = receber_tiro(matriz_barcos)
+    if acabou:
+        limpar_tela()
+        escrever_tela("PERDEU",0,0)
+        mostrar_tela()
+        # desligar_wifi(conn.wlan, conn.is_server)
+        return True
+    return False
+
+
+def time_A_batalha(matriz_tiros):
+    while True:
+        acabou = atacar(matriz_tiros)
+        if acabou:
+            break
+        acabou = defender(matriz_tiros)
+        if acabou:
+            break
+
+def time_B_batalha(matriz_tiros):
+    while True:
+        acabou = defender(matriz_tiros)
+        if acabou:
+            break
+        acabou = atacar(matriz_tiros)
+        if acabou:
+            break
 
 def fase_batalha(matriz_barcos):
     matriz_tiros = [[0 for _ in range(5)]for _ in range(5)]
-    tiro_x = 0
-    tiro_y = 0
+    if conn.is_server:
+        time_A_batalha(matriz_tiros)
+    else:
+        time_B_batalha(matriz_tiros)
+        
+def escolher_lado():
+    limpar_tela()
+    escrever_tela("Escolha seu lado", 0, 0)
+    escrever_tela("A<-Time A", 0, 10)
+    escrever_tela("Time B->B", 0, 20)
+    mostrar_tela()
+    
     while True:
-        apagar_leds()
-        ganhou = dar_tiro(matriz_tiros, tiro_x, tiro_y)
-        if ganhou:
-            limpar_tela()
-            escrever_tela("GANHOU",0,0)
-            mostrar_tela()
-            carinha_feliz(AZUL)
-            #fechar_conexao
-            break
-        apagar_leds()
-        acertou,perdeu = receber_tiro(matriz_barcos)
-        if perdeu:
-            limpar_tela()
-            escrever_tela("PERDEU",0,0)
-            mostrar_tela()
-            #fechar_conexao
-            break
+        if botao_A_pressionado():
+            return 0
+        if botao_B_pressionado():
+            return 1
 
+def escolher_grupo():
+
+    old = ticks_us()
+    numero = 0
+    while True:
+        
+        limpar_tela()
+        escrever_tela("Escolha o grupo", 0, 0)
+        escrever_tela(str(round(numero)), 0, 10)
+        escrever_tela("A para confirmar", 0, 20)
+        mostrar_tela()
+        
+        if botao_A_pressionado():
+            return round(numero)
+            
+        delta,old = tempo_de_jogo(old)
+        jx = joystick_x()
+        if jx > 0 and numero <= 255:
+            numero = numero + 1/250000*delta
+        if jx < 0 and numero >= 0:
+            numero = numero - 1/250000*delta
+
+
+def iniciar_time_A(ssid, senha, num):
+    wlan = iniciar_servidor(ssid, senha, num)
+    if wlan == -1:
+        machine.reset
+    conn = servidor_conectar()
+    return wlan,conn
+
+def iniciar_time_B(ssid, senha, num):
+    wlan,conn = cliente_conectar(ssid, senha, num)
+    if wlan == -1:
+        machine.reset
+    return wlan, conn
+    
+def fase_busca_inimigo():
+    global conn
+    time = escolher_lado()
+    numero = escolher_grupo()
+    limpar_tela()
+    escrever_tela("Estabelecendo", 0, 0)
+    escrever_tela("Conexao", 0, 10)
+    mostrar_tela()
+    
+    ssid = f'BitDogLab_{numero}'
+    senha = f'BitDogLab_{numero}'
+    if time == 0:
+        wlanA,connA = iniciar_time_A(ssid, senha, numero)
+        conn = conexao(wlanA, connA, True)
+    elif time == 1:
+        wlanB,connB = iniciar_time_B(ssid, senha, numero)
+        conn = conexao(wlanB, connB, False)
+    else:
+        machine.reset()
+    _thread.start_new_thread(receber_via_wifi, (conn.conn,))
+    limpar_tela()
+    escrever_tela("Conexao", 0, 0)
+    escrever_tela("Estabelecida", 0, 10)
+    mostrar_tela()
+    
+def mandar_pronto():
+    global conn
+    
+    apagar_leds()
+    limpar_tela()
+    escrever_tela('Aguardando',0,0)
+    escrever_tela('Inimigo',0,10)
+    mostrar_tela()
+    
+    enviar_via_wifi(conn.conn, ['1'])
+    esperar_receber()
+ 
 while True:
+    fase_busca_inimigo()
     matriz_barcos = fase_posicionamento()
+    mandar_pronto()
     fase_batalha(matriz_barcos)
-    while valor_botao_A():
+    while valor_botao_A:
         pass
     machine.reset()
