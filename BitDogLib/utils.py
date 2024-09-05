@@ -1,4 +1,5 @@
 from utime import ticks_us
+from machine import reset
 import random
 
 
@@ -28,3 +29,6 @@ def loop(func):
     while True:
         delta, old = tempo_de_jogo(old)
         func(delta)
+
+def reiniciar():
+    reset()

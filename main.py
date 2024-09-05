@@ -1,8 +1,6 @@
 from BitDogLib import *
 from utime import ticks_us
 #Apenas para testes
-from time import sleep
-import machine
 import _thread
 
 from BitDogLib.led import carinha_feliz
@@ -51,7 +49,10 @@ barcos = [Barco(3),
           Barco(1),
           Barco(1)]
 
+matriz_old = [[0 for _ in range(5)] for _ in range(5)]
+
 def posicionando_barco(novo_barco:Barco, barcos:list[Barco]):
+    global matriz_old
     matriz = criar_matriz_barcos(barcos)
     b = 0
     aceitavel = True
@@ -70,7 +71,8 @@ def posicionando_barco(novo_barco:Barco, barcos:list[Barco]):
         else:
             matriz[y][x] = 4
         b = b + 1
-    desenhar_matriz(matriz)
+    diff_matriz(matriz_old, matriz)
+    matriz_old = copy_matriz(matriz)
     return aceitavel
 
 def criar_matriz_barcos(barcos:list[Barco]):
@@ -131,7 +133,6 @@ def fase_posicionamento():
             if jy < 0 and barco.y >= 0:
                 barco.y = barco.y - 1/250000*delta
 
-            apagar_leds()
             pode = posicionando_barco(barco, barcos)
             if botao_B_pressionado() and pode:
                 barco.colocado = True
@@ -225,6 +226,26 @@ def desenhar_matriz(matriz):
                 ligar_led(x,y,BRANCO)
             x = x + 1
         y = y + 1
+    
+def colorir_led(type, x, y):
+    if type == 1:
+        ligar_led(x,y, VERDE)
+    elif type == 2:
+        ligar_led(x,y,VERMELHO)
+    elif type == 3:
+        ligar_led(x,y,AZUL)
+    elif type == 4:
+        ligar_led(x,y,BRANCO)
+    elif type == 0:
+        apagar_led(x,y)
+    
+def diff_matriz(matriz_old, matriz_new):
+    for y,l in enumerate(zip(matriz_old, matriz_new)):
+        lo,ln = l
+        for x, c in enumerate(zip(lo, ln)):
+            co,cn = c
+            if co != cn:
+                colorir_led(cn, x, y)
 
 def dar_tiro(matriz_tiros):
     old = ticks_us()
@@ -297,7 +318,7 @@ def defender(matriz_tiros):
         limpar_tela()
         escrever_tela("PERDEU",0,0)
         mostrar_tela()
-        # desligar_wifi(conn.wlan, conn.is_server)
+        desligar_wifi(conn.wlan, conn.is_server)
         return True
     return False
 
@@ -366,14 +387,14 @@ def escolher_grupo():
 def iniciar_time_A(ssid, senha, num):
     wlan = iniciar_servidor(ssid, senha, num)
     if wlan == -1:
-        machine.reset
+        reiniciar()
     conn = servidor_conectar()
     return wlan,conn
 
 def iniciar_time_B(ssid, senha, num):
     wlan,conn = cliente_conectar(ssid, senha, num)
     if wlan == -1:
-        machine.reset
+        reiniciar()
     return wlan, conn
     
 def fase_busca_inimigo():
@@ -394,7 +415,7 @@ def fase_busca_inimigo():
         wlanB,connB = iniciar_time_B(ssid, senha, numero)
         conn = conexao(wlanB, connB, False)
     else:
-        machine.reset()
+        reiniciar()
     _thread.start_new_thread(receber_via_wifi, (conn.conn,))
     limpar_tela()
     escrever_tela("Conexao", 0, 0)
@@ -412,6 +433,9 @@ def mandar_pronto():
     
     enviar_via_wifi(conn.conn, ['1'])
     esperar_receber()
+    
+def copy_matriz(matriz):
+    return [[j for j in i] for i in matriz]
  
 while True:
     fase_busca_inimigo()
@@ -420,4 +444,4 @@ while True:
     fase_batalha(matriz_barcos)
     while valor_botao_A:
         pass
-    machine.reset()
+    reiniciar()
