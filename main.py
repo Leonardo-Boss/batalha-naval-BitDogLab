@@ -12,6 +12,7 @@ VERDE = [0,2,0]
 VERMELHO = [2,0,0]
 AZUL = [0,0,2]
 BRANCO = [10,10,10]
+APAGADO = [0,0,0]
 
 class Barco:
     def __init__(self, tamanho) -> None:
@@ -27,9 +28,9 @@ class Barco:
         y = round(self.y)
         while b < self.tamanho:
             if self.orientacao == HORIZONTAL:
-                matriz[y][x + b] = 1
+                matriz[y][x + b] = VERDE
             else:
-                matriz[y + b][x] = 1
+                matriz[y + b][x] = VERDE
             b = b + 1
         return matriz
 
@@ -49,10 +50,8 @@ barcos = [Barco(3),
           Barco(1),
           Barco(1)]
 
-matriz_old = [[0 for _ in range(5)] for _ in range(5)]
 
 def posicionando_barco(novo_barco:Barco, barcos:list[Barco]):
-    global matriz_old
     matriz = criar_matriz_barcos(barcos)
     b = 0
     aceitavel = True
@@ -65,18 +64,17 @@ def posicionando_barco(novo_barco:Barco, barcos:list[Barco]):
             y = novo_barco.y + b
         x = round(x)
         y = round(y)
-        if matriz[y][x] == 1:
-            matriz[y][x] = 2
+        if matriz[y][x] == VERDE:
+            matriz[y][x] = VERMELHO
             aceitavel = False
         else:
-            matriz[y][x] = 4
+            matriz[y][x] = BRANCO
         b = b + 1
-    diff_matriz(matriz_old, matriz)
-    matriz_old = copy_matriz(matriz)
+    ligar_matriz(matriz)
     return aceitavel
 
 def criar_matriz_barcos(barcos:list[Barco]):
-    matriz = [[0 for _ in range(5)]for _ in range(5)]
+    matriz = criar_matriz()
     for barco in barcos:
         if barco.colocado:
             matriz = barco.desenhar(matriz)
@@ -84,7 +82,7 @@ def criar_matriz_barcos(barcos:list[Barco]):
 
 def desenhar_todos_os_barcos(barcos:list[Barco]):
     matriz = criar_matriz_barcos(barcos)
-    desenhar_matriz(matriz)
+    ligar_matriz(matriz)
     return matriz
 
 def tempo_de_jogo(old):
@@ -162,7 +160,7 @@ def selecionar_posicao_tiro(matriz_tiros):
             tiro_y = tiro_y - 1/250000*delta
 
         pode = True
-        if matriz_tiros[round(tiro_y)][round(tiro_x)] > 0:
+        if matriz_tiros[round(tiro_y)][round(tiro_x)] != APAGADO:
             ligar_led(tiro_x, tiro_y, VERMELHO)
             pode = False
         else:
@@ -172,9 +170,9 @@ def selecionar_posicao_tiro(matriz_tiros):
             acertou, acabou = checar_acertou_ganhou(tiro_x, tiro_y)
             old = ticks_us()
             if acertou:
-                matriz_tiros[round(tiro_y)][round(tiro_x)] = 1
+                matriz_tiros[round(tiro_y)][round(tiro_x)] = VERDE
             else:
-                matriz_tiros[round(tiro_y)][round(tiro_x)] = 2
+                matriz_tiros[round(tiro_y)][round(tiro_x)] = AZUL
                 break
                 
             if(acabou):
@@ -198,57 +196,22 @@ def checar_acertou_ganhou(x, y):
     return acertou, acabou
 
 def desenhar_tiros(matriz_tiros, tiro_x, tiro_y):
-    y = 0
-    while y < 5:
-        x = 0
-        while x < 5:
-            if x == round(tiro_x) and y == round(tiro_y):
-                pass
-            elif matriz_tiros[y][x] == 1:
-                ligar_led(x,y, VERDE)
-            elif matriz_tiros[y][x] == 2:
-                ligar_led(x,y,AZUL)
-            x = x + 1
-        y = y + 1
-
-def desenhar_matriz(matriz):
-    y = 0
-    while y < 5:
-        x = 0
-        while x < 5:
-            if matriz[y][x] == 1:
-                ligar_led(x,y, VERDE)
-            elif matriz[y][x] == 2:
-                ligar_led(x,y,VERMELHO)
-            elif matriz[y][x] == 3:
-                ligar_led(x,y,AZUL)
-            elif matriz[y][x] == 4:
-                ligar_led(x,y,BRANCO)
-            x = x + 1
-        y = y + 1
-    
-def colorir_led(type, x, y):
-    if type == 1:
-        ligar_led(x,y, VERDE)
-    elif type == 2:
-        ligar_led(x,y,VERMELHO)
-    elif type == 3:
-        ligar_led(x,y,AZUL)
-    elif type == 4:
-        ligar_led(x,y,BRANCO)
-    elif type == 0:
-        apagar_led(x,y)
-    
-def diff_matriz(matriz_old, matriz_new):
-    for y,l in enumerate(zip(matriz_old, matriz_new)):
-        lo,ln = l
-        for x, c in enumerate(zip(lo, ln)):
-            co,cn = c
-            if co != cn:
-                colorir_led(cn, x, y)
+    ligar_matriz(matriz_tiros)
+    ligar_led(tiro_x,tiro_y,BRANCO)
+    # y = 0
+    # while y < 5:
+    #     x = 0
+    #     while x < 5:
+    #         if x == round(tiro_x) and y == round(tiro_y):
+    #             pass
+    #         elif matriz_tiros[y][x] == VERDE:
+    #             ligar_led(x,y, VERDE)
+    #         elif matriz_tiros[y][x] == AZUL:
+    #             ligar_led(x,y,AZUL)
+    #         x = x + 1
+    #     y = y + 1
 
 def dar_tiro(matriz_tiros):
-    old = ticks_us()
     ganhou = False
     limpar_tela()
     escrever_tela("FASE DE ATAQUE", 0, 0)
@@ -276,18 +239,17 @@ def receber_tiro(matriz_barcos):
     mostrar_tela()
     while True:
         acertou = 0
-        apagar_leds()
-        desenhar_matriz(matriz_barcos)
+        ligar_matriz(matriz_barcos)
         dado = esperar_receber()
         tiro_x = dado[0]
         tiro_y = dado[1]
-        if matriz_barcos[tiro_y][tiro_x] == 1:
+        if matriz_barcos[tiro_y][tiro_x] == VERDE:
             acertou = 1
-            matriz_barcos[tiro_y][tiro_x] = 2
+            matriz_barcos[tiro_y][tiro_x] = VERMELHO
             som_explosao()
         else:
-            matriz_barcos[tiro_y][tiro_x] = 3
-            desenhar_matriz(matriz_barcos)
+            matriz_barcos[tiro_y][tiro_x] = AZUL
+            ligar_matriz(matriz_barcos)
             som_agua()
             
         if checar_perdeu(matriz_barcos):
@@ -300,7 +262,6 @@ def receber_tiro(matriz_barcos):
     return acabou
 
 def atacar(matriz_tiros):
-    apagar_leds()
     acabou = dar_tiro(matriz_tiros)
     if acabou:
         limpar_tela()
@@ -311,8 +272,7 @@ def atacar(matriz_tiros):
         return True
     return False
 
-def defender(matriz_tiros):
-    apagar_leds()
+def defender():
     acabou = receber_tiro(matriz_barcos)
     if acabou:
         limpar_tela()
@@ -328,20 +288,20 @@ def time_A_batalha(matriz_tiros):
         acabou = atacar(matriz_tiros)
         if acabou:
             break
-        acabou = defender(matriz_tiros)
+        acabou = defender()
         if acabou:
             break
 
 def time_B_batalha(matriz_tiros):
     while True:
-        acabou = defender(matriz_tiros)
+        acabou = defender()
         if acabou:
             break
         acabou = atacar(matriz_tiros)
         if acabou:
             break
 
-def fase_batalha(matriz_barcos):
+def fase_batalha():
     matriz_tiros = [[0 for _ in range(5)]for _ in range(5)]
     if conn.is_server:
         time_A_batalha(matriz_tiros)
@@ -433,15 +393,12 @@ def mandar_pronto():
     
     enviar_via_wifi(conn.conn, ['1'])
     esperar_receber()
-    
-def copy_matriz(matriz):
-    return [[j for j in i] for i in matriz]
  
 while True:
     fase_busca_inimigo()
     matriz_barcos = fase_posicionamento()
     mandar_pronto()
-    fase_batalha(matriz_barcos)
+    fase_batalha()
     while valor_botao_A:
         pass
     reiniciar()
