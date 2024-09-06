@@ -57,12 +57,12 @@ def receber_via_wifi(conn):
     while True:
         print('Esperando dados...')
         data = conn.recv(1024)
+        string = data.decode('utf-8').strip()
         try:
-            string = data.decode('utf-8').strip()
             dado = json.loads(string)
             fila.append(dado)
         except:
-            print('Not a json')
+            print('Dado Invalido')
             
 def enviar_via_wifi(conn, msg:list):
     string = json.dumps(msg)
@@ -81,9 +81,7 @@ def esperar_receber():
         if len(dado) > 0:
             print(f'Recebido: {dado}')
             return dado 
-
-def desligar_wifi(wlan, is_server):
-    if not is_server:
-        wlan.disconnect()
+        
+def desligar_wifi(wlan):
     wlan.active(False)
     print('Desligado')
