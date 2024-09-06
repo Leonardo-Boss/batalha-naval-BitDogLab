@@ -22,7 +22,7 @@ omatrix = [[(0,0,0) for _ in range(COL_SIZE)] for _ in range(ROW_SIZE)]
 # inicializa a conexão com a matriz de leds
 np = neopixel.NeoPixel(Pin(7), NUM_LEDS)
 
-def matriz():
+def criar_matriz():
     '''retorna uma matriz apagada do tamanho da matriz de leds'''
     return [[(0,0,0) for _ in range(COL_SIZE)] for _ in range(ROW_SIZE)]
 
