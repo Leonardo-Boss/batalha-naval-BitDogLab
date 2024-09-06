@@ -14,7 +14,10 @@ NUM_LEDS = ROW_SIZE * COL_SIZE
 
 # lib
 # mapeia os indicies em uma matriz para utilização mais intuitiva
-LED_MAP = tuple(tuple(i for i in range(j*COL_SIZE+COL_SIZE-1,j*COL_SIZE-1, -1)) for j in range(0,ROW_SIZE))
+LED_MAP = [[i for i in range(j*COL_SIZE+COL_SIZE-1,j*COL_SIZE-1, -1)]
+    if j % 2 == 0
+    else [i for i in range(j*COL_SIZE, j*COL_SIZE+COL_SIZE)]
+    for j in range(0,ROW_SIZE)]
 
 # cria uma matriz inicial que vai guardar o estado anterior da matriz
 omatrix = [[(0,0,0) for _ in range(COL_SIZE)] for _ in range(ROW_SIZE)]
