@@ -2,8 +2,11 @@ import network
 import socket
 import time
 import json
-from utime import ticks_ms
+from utime import ticks_ms, sleep
 from .utils import reiniciar
+from .block import block, unblock, blocked
+from .led import _carinha_triste, _apagar_leds
+from .oled import _limpar_tela, _mostrar_tela, _escrever_tela
 
 fila = []
 wlan = network.WLAN()
@@ -89,7 +92,13 @@ def esperar_receber():
             old = new
             if not wlan.isconnected():
                 print(f'Conexão Perdida')
+                block()
+                _carinha_triste((10,0,0))
+                _limpar_tela()
+                _escrever_tela('Conexão Perdida', 0, 0)
+                _mostrar_tela()
                 desligar_wifi()
+                sleep(1)
                 reiniciar()
                 
         dado = ler_wifi()

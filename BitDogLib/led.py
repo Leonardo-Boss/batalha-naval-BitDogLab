@@ -23,6 +23,7 @@ LED_MAP = [[i for i in range(j*COL_SIZE+COL_SIZE-1,j*COL_SIZE-1, -1)]
 
 # cria uma matriz inicial que vai guardar o estado anterior da matriz
 omatrix = [[[0,0,0] for _ in range(COL_SIZE)] for _ in range(ROW_SIZE)]
+older_matrix = omatrix
 
 # inicializa a conexão com a matriz de leds
 np = neopixel.NeoPixel(Pin(7), NUM_LEDS)
@@ -31,6 +32,13 @@ block_lib = False
 def criar_matriz():
     '''retorna uma matriz apagada do tamanho da matriz de leds'''
     return [[[0,0,0] for _ in range(COL_SIZE)] for _ in range(ROW_SIZE)]
+
+def safe_matrix():
+    global older_matrix
+    older_matrix = omatrix
+
+def load_old_matrix():
+    _ligar_matriz(older_matrix)
 
 def copiar_matriz(matriz):
     '''faz uma cópia de uma matriz de duas dimensões'''
@@ -86,7 +94,7 @@ def carinha_feliz(cor):
     _carinha_feliz(cor)
 
 def _carinha_feliz(cor):
-    apagar_leds()
+    _apagar_leds()
     np[LED_MAP[3][1]] = cor
     np[LED_MAP[3][3]] = cor
     np[LED_MAP[1][0]] = cor
@@ -102,7 +110,7 @@ def carinha_triste(cor):
     _carinha_triste(cor)
 
 def _carinha_triste(cor):
-    apagar_leds()
+    _apagar_leds()
     np[LED_MAP[3][1]] = cor
     np[LED_MAP[3][3]] = cor
     np[LED_MAP[0][0]] = cor
