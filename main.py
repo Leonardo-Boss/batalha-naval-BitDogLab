@@ -19,6 +19,7 @@ try:
     BRANCO = [10,10,10]
     APAGADO = [0,0,0]
     
+    is_server = False
     class Barco:
         def __init__(self, tamanho) -> None:
             self.x = 0
@@ -38,14 +39,6 @@ try:
                     matriz[y + b][x] = VERDE
                 b = b + 1
             return matriz
-    
-    class conexao:
-        def __init__(self, wlan, conn, is_server) -> None:
-            self.wlan = wlan
-            self.conn = conn
-            self.is_server = is_server
-        
-    conn = conexao(0,0, False)
     
     QUANTIDADE_DE_BARCOS = 6
     barcos = [Barco(3),
@@ -187,7 +180,7 @@ try:
         x = round(x)
         y = round(y)
         
-        enviar_via_wifi(conn.conn, [x,y])
+        enviar_via_wifi([x,y])
         dado = esperar_receber()
         acertou = dado[0]
         acabou = dado[1]
@@ -246,7 +239,7 @@ try:
             if checar_perdeu(matriz_barcos):
                 acabou = 1
                 
-            enviar_via_wifi(conn.conn, [acertou, acabou])
+            enviar_via_wifi([acertou, acabou])
             if acertou == 0 or acabou == 1:
                 break
             
@@ -293,7 +286,7 @@ try:
     
     def fase_batalha():
         matriz_tiros = criar_matriz()
-        if conn.is_server:
+        if is_server:
             time_A_batalha(matriz_tiros)
         else:
             time_B_batalha(matriz_tiros)
@@ -335,20 +328,14 @@ try:
     
     
     def iniciar_time_A(ssid, senha, num):
-        wlan = iniciar_servidor(ssid, senha, num)
-        if wlan == -1:
-            reiniciar()
-        conn = servidor_conectar()
-        return wlan,conn
+        iniciar_servidor(ssid, senha, num)
+        servidor_conectar()
     
     def iniciar_time_B(ssid, senha, num):
-        wlan,conn = cliente_conectar(ssid, senha, num)
-        if wlan == -1:
-            reiniciar()
-        return wlan, conn
+        cliente_conectar(ssid, senha, num)
         
     def fase_busca_inimigo():
-        global conn
+        global is_server
         time = escolher_lado()
         numero = escolher_grupo()
         limpar_tela()
@@ -359,37 +346,35 @@ try:
         ssid = f'BitDogLab_{numero}'
         senha = f'BitDogLab_{numero}'
         if time == 0:
-            wlanA,connA = iniciar_time_A(ssid, senha, numero)
-            conn = conexao(wlanA, connA, True)
+            iniciar_time_A(ssid, senha, numero)
+            is_server = True
         elif time == 1:
-            wlanB,connB = iniciar_time_B(ssid, senha, numero)
-            conn = conexao(wlanB, connB, False)
+            iniciar_time_B(ssid, senha, numero)
         else:
             reiniciar()
-        _thread.start_new_thread(receber_via_wifi, (conn.conn,))
+        _thread.start_new_thread(receber_via_wifi, ())
         limpar_tela()
         escrever_tela("Conexao", 0, 0)
         escrever_tela("Estabelecida", 0, 10)
         mostrar_tela()
         
     def mandar_pronto():
-        global conn
-        
         apagar_leds()
         limpar_tela()
         escrever_tela('Aguardando',0,0)
         escrever_tela('Inimigo',0,10)
         mostrar_tela()
         
-        enviar_via_wifi(conn.conn, [1])
+        enviar_via_wifi([1])
         esperar_receber()
     
+    desligar_wifi()
     fase_busca_inimigo()
     matriz_barcos = fase_posicionamento()
     mandar_pronto()
     fase_batalha()
     sleep(2)
-    desligar_wifi(conn.wlan)
+    desligar_wifi()
     limpar_tela()
     escrever_tela('Reinicie',0,0)
     escrever_tela('para jogar',0,20)

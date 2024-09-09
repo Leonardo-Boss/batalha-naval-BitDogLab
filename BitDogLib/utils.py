@@ -1,6 +1,7 @@
 from utime import ticks_us
 from machine import reset
 import random
+from .led import apagar_leds
 
 
 def ler_arquivo(nome):
@@ -31,4 +32,5 @@ def loop(func):
         func(delta)
 
 def reiniciar():
+    apagar_leds()
     reset()
