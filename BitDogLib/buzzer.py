@@ -1,9 +1,14 @@
 from machine import Pin, PWM
 import time
+from block import blocked
 
 buzzer = PWM(Pin(21))
 
 def som_morreu():
+    blocked()
+    _som_morreu()
+
+def _som_morreu():
     # Sequência de notas
     melody = [200, 50]
     
@@ -20,6 +25,10 @@ def som_morreu():
 
 
 def som_explosao():
+    blocked()
+    _som_explosao()
+
+def _som_explosao():
     explosion_tones = [100, 150, 200, 250, 300, 200, 100]  # Frequencies to simulate explosion
 
     for tone in explosion_tones:
@@ -30,6 +39,10 @@ def som_explosao():
     buzzer.deinit()  # Turn off the buzzer
 
 def som_agua():
+    blocked()
+    _som_agua()
+
+def _som_agua():
     tones = [800, 600, 400, 300, 200, 100, 50]
 
     for tone in tones:
