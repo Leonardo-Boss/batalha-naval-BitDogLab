@@ -1,6 +1,6 @@
 from machine import Pin, PWM
 import time
-from block import blocked
+from .block import blocked
 
 buzzer = PWM(Pin(21))
 
