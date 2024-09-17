@@ -70,7 +70,7 @@ def _botao_B_solto():
     global button_b_released
     r = False
     b = valor_botao_B()
-    if b == 0 and button_b_released != b:
+    if b == 1 and button_b_released != b:
         r = True
     button_b_released = b
     return r

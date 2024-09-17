@@ -12,9 +12,9 @@ def joystick_x():
 def _joystick_x():
     xValue = xAxis.read_u16()
     if xValue <= 600:
-        return -1
-    elif xValue >= 60000:
         return 1
+    elif xValue >= 60000:
+        return -1
     return 0
 
 def joystick_y():
