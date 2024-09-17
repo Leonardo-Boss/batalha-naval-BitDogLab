@@ -11,6 +11,8 @@ from .oled import _limpar_tela, _mostrar_tela, _escrever_tela
 fila = []
 wlan = network.WLAN()
 conn = None
+pacote = 0
+pacotes_recebidos = []
 
 def iniciar_servidor(ssid:str, senha:str, grupo:int):
     global wlan
@@ -61,32 +63,68 @@ def cliente_conectar(ssid:str, senha:str, grupo:int):
 
 def receber_via_wifi():
     global conn
+    global pacote
+    global fila
+    global pacotes_recebidos
     while True:
         print('Esperando dados...')
         data = conn.recv(1024)
-        string = data.decode('utf-8').strip()
+        pck = data.decode('utf-8').strip()
+        print(f"Recebido: {pck}")
         try:
-            dado = json.loads(string)
-            fila.append(dado)
+            pck = json.loads(pck)
+            if not pck[0] in pacotes_recebidos:
+                fila.append(pck)
+                pacotes_recebidos.append(pck[0])
+            if pck[2] != 1:
+                enviar_ack([pck[0]])
+                pacote += 1
         except:
-            print('Dado Invalido')
+            print(f'Dado Invalido {pck}')
             
 def enviar_via_wifi(msg:list):
     global conn
-    string = json.dumps(msg)
-    conn.send(string.encode())
-    print('Enviado:', msg)
+    global pacote
+    msg = [pacote, msg, 0]
+    pck = f'{json.dumps(msg)}\n'
+    pacote_enviado = pacote
+    while True:
+        conn.send(pck.encode())
+        print('Enviado:', pck)
+        sleep(1)
+        msg_recebida = ler_ack()
+        if len(msg_recebida) > 0 and msg_recebida[1][0] == pacote_enviado:
+            print('ACK Recebido')
+            break
+    pacote += 1
 
+def enviar_ack(msg:list):
+    global conn
+    global pacote
+    msg = [pacote, msg, 1]
+    pck = f'{json.dumps(msg)}\n'
+    conn.send(pck.encode())
+    pacote += 1
+    print('Enviado ACK:', pck)
+    
 def ler_wifi() -> list:
     global fila
     if len(fila) > 0:
         return fila.pop(0)
     return []
 
+def ler_ack()->list:
+    global fila
+    for i,msg in enumerate(fila):
+        if msg[2] == 1:
+            return fila.pop(i)
+    return []
+    
 def esperar_receber():
     global wlan
     old = ticks_ms()
     while True:
+        #print(wlan.status('rssi'))
         new = ticks_ms()
         if new - old >= 2000:
             old = new
@@ -102,9 +140,8 @@ def esperar_receber():
                 reiniciar()
                 
         dado = ler_wifi()
-        if len(dado) > 0:
-            print(f'Recebido: {dado}')
-            return dado 
+        if len(dado) > 0 and dado[2] != 1:
+            return dado[1]
         
 def desligar_wifi():
     wlan.active(False)
