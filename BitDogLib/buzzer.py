@@ -1,7 +1,7 @@
 from machine import Pin, PWM
 import time
 
-# Indica que o buzzero esta no pino PWM 21
+# Indica que o buzzer esta no pino PWM 21
 buzzer = PWM(Pin(21))
 
 # Essa função toca um som de morte
