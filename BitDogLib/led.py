@@ -22,29 +22,31 @@ LED_MAP = [[i for i in range(j*COL_SIZE+COL_SIZE-1,j*COL_SIZE-1, -1)]
 
 # cria uma matriz inicial que vai guardar o estado anterior da matriz
 omatrix = [[[0,0,0] for _ in range(COL_SIZE)] for _ in range(ROW_SIZE)]
-older_matrix = omatrix
+# Armazena a matriz previamente apresenta na matriz de Leds
+matriz_antiga = omatrix
 
 # inicializa a conexão com a matriz de leds
 np = neopixel.NeoPixel(Pin(7), NUM_LEDS)
-block_lib = False
 
+# Essa função retorna uma matriz apagada do tamanho da matriz de leds
 def criar_matriz():
-    '''retorna uma matriz apagada do tamanho da matriz de leds'''
     return [[[0,0,0] for _ in range(COL_SIZE)] for _ in range(ROW_SIZE)]
 
-def safe_matrix():
-    global older_matrix
-    older_matrix = omatrix
+#Essa função armazena a matriz anteriormente apresentada na matriz em matriz_antiga
+def salvar_matriz():
+    global matriz_antiga
+    matriz_antiga = omatrix
 
-def load_old_matrix():
-    ligar_matriz(older_matrix)
+# Essa função carrega na matriz de LED a matriz que esta em matriz_antiga
+def carregar_matriz_antiga():
+    ligar_matriz(matriz_antiga)
 
+# Essa função faz uma cópia de uma matriz de duas dimensões
 def copiar_matriz(matriz):
-    '''faz uma cópia de uma matriz de duas dimensões'''
     return [[j for j in i] for i in matriz]
 
+# Essa função liga a matriz passada
 def ligar_matriz(matriz):
-    '''liga a matriz passada'''
     global omatrix
     mudou = False
     for y,linha in enumerate(zip(omatrix, matriz)):
@@ -61,8 +63,8 @@ def ligar_matriz(matriz):
     if mudou:
         np.write()
 
+# Essa liga um led na posição X Y e na cor cor
 def ligar_led(x, y, cor):
-    '''liga um led na posição e cor especificada'''
     global omatrix
     x = round(x)
     y = round(y)
@@ -79,8 +81,8 @@ def ligar_led(x, y, cor):
     np[indice] = cor  # Define a cor do LED específico
     np.write()  # Atualiza a matriz de LEDs para aplicar a mudança
 
+# Pinta uma carinha feliz na matriz de LEDs
 def carinha_feliz(cor):
-    '''carinha feliz :)'''
     apagar_leds()
     np[LED_MAP[3][1]] = cor
     np[LED_MAP[3][3]] = cor
@@ -91,8 +93,8 @@ def carinha_feliz(cor):
     np[LED_MAP[0][2]] = cor
     np.write()
     
+# Pinta uma carinha triste na matriz de LEDs
 def carinha_triste(cor):
-    '''carinha triste :)'''
     apagar_leds()
     np[LED_MAP[3][1]] = cor
     np[LED_MAP[3][3]] = cor
@@ -103,8 +105,8 @@ def carinha_triste(cor):
     np[LED_MAP[1][2]] = cor
     np.write()
 
+# Essa função apaga um led na posição X Y
 def apagar_led(x, y):
-    '''apaga um led na posição especificada'''
     global omatrix
     x = round(x)
     y = round(y)
@@ -122,8 +124,8 @@ def apagar_led(x, y):
     np[indice] = off  # Define a cor do LED específico
     np.write()  # Atualiza a matriz de LEDs para aplicar a mudança
 
+# Essa função apaga todos os LEDs
 def apagar_leds():
-    '''apaga todos os leds'''
     i = 0
     while i < 5:
         j = 0
