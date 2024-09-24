@@ -1,7 +1,7 @@
 # Esse módulo possui métodos utéis para programação da BitDogLab, os quais não se encaixavam
 # nos outros módulos
 # 
-from utime import ticks_us
+from utime import ticks_us, sleep
 from machine import reset
 import random
 from .led import apagar_leds
@@ -37,6 +37,10 @@ def loop(func):
     while True:
         delta, old = tempo_de_jogo(old)
         func(delta)
+
+# Essa função dorme a BitDogLab pelos segundos passados no argumento
+def dormir(segundos):
+    sleep(segundos)
 
 # Essa função reinicia a BitDogLab de forma a apagar os LEDs
 def reiniciar():
