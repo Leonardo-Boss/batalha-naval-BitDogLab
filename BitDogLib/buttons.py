@@ -1,5 +1,4 @@
 from machine import Pin
-from .block import blocked
 
 button_a = Pin(5, Pin.IN, Pin.PULL_UP)
 button_b = Pin(6, Pin.IN, Pin.PULL_UP)
@@ -10,24 +9,12 @@ button_b_pressed = 1
 button_b_released = 1
 
 def valor_botao_A():
-    blocked()
-    return _valor_botao_A()
-
-def _valor_botao_A():
     return button_a.value()
 
 def valor_botao_B():
-    blocked()
-    return _valor_botao_B()
-
-def _valor_botao_B():
     return button_b.value()
 
 def botao_A_pressionado():
-    blocked()
-    return _botao_A_pressionado()
-
-def _botao_A_pressionado():
     global button_a_pressed
     r = False
     a = valor_botao_A()
@@ -37,10 +24,6 @@ def _botao_A_pressionado():
     return r
 
 def botao_A_solto():
-    blocked()
-    return _botao_A_solto()
-
-def _botao_A_solto():
     global button_a_released
     r = False
     a = valor_botao_A()
@@ -50,10 +33,6 @@ def _botao_A_solto():
     return r
 
 def botao_B_pressionado():
-    blocked()
-    return _botao_B_pressionado()
-
-def _botao_B_pressionado():
     global button_b_pressed
     r = False
     b = valor_botao_B()
@@ -63,10 +42,6 @@ def _botao_B_pressionado():
     return r
 
 def botao_B_solto():
-    blocked()
-    return _botao_B_solto()
-
-def _botao_B_solto():
     global button_b_released
     r = False
     b = valor_botao_B()

@@ -7,8 +7,8 @@ import json
 import _thread
 from utime import ticks_ms, sleep
 from .utils import reiniciar
-from .led import _carinha_triste
-from .oled import _limpar_tela, _mostrar_tela, _escrever_tela
+from .led import carinha_triste
+from .oled import limpar_tela, mostrar_tela, escrever_tela
 
 # A variável fila será usada para adicionar as mensagens que chegam
 fila = []
@@ -185,10 +185,10 @@ def esperar_receber():
             # Verifica se perdeu a conexão
             if not wlan.isconnected():
                 print(f'Conexão Perdida')
-                _carinha_triste((10,0,0))
-                _limpar_tela()
-                _escrever_tela('Conexão Perdida', 0, 0)
-                _mostrar_tela()
+                carinha_triste((10,0,0))
+                limpar_tela()
+                escrever_tela('Conexão Perdida', 0, 0)
+                mostrar_tela()
                 desligar_wifi()
                 sleep(1)
                 reiniciar()
@@ -203,10 +203,10 @@ def esperar_receber():
 # Essa função recebe o grupo(primeiro trio do IP) e se é um servidor
 # Então inicializa-o corretamete, Mostrando no OLED informações necessárias   
 def definir_servidor_ou_cliente(grupo:int, is_servidor:bool):
-    _limpar_tela()
-    _escrever_tela("Estabelecendo", 0, 0)
-    _escrever_tela("Conexao", 0, 10)
-    _mostrar_tela()
+    limpar_tela()
+    escrever_tela("Estabelecendo", 0, 0)
+    escrever_tela("Conexao", 0, 10)
+    mostrar_tela()
     
     # Defini nome da rede
     ssid = f'BitDogLab_{grupo}'
@@ -222,10 +222,10 @@ def definir_servidor_ou_cliente(grupo:int, is_servidor:bool):
         cliente_conectar(ssid, senha, grupo)
     # Inicia no segundo core a função receber_via_wifi
     _thread.start_new_thread(receber_via_wifi, ())
-    _limpar_tela()
-    _escrever_tela("Conexao", 0, 0)
-    _escrever_tela("Estabelecida", 0, 10)
-    _mostrar_tela()
+    limpar_tela()
+    escrever_tela("Conexao", 0, 0)
+    escrever_tela("Estabelecida", 0, 10)
+    mostrar_tela()
         
 # Essa função desliga o WiFi
 def desligar_wifi():

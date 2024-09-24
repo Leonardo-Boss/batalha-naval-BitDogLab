@@ -3,7 +3,6 @@
 from machine import Pin
 import neopixel
 from utime import ticks_ms
-from .block import *
 
 # Número de LEDs na sua matriz 5x5
 # lib / aula
@@ -38,7 +37,7 @@ def safe_matrix():
     older_matrix = omatrix
 
 def load_old_matrix():
-    _ligar_matriz(older_matrix)
+    ligar_matriz(older_matrix)
 
 def copiar_matriz(matriz):
     '''faz uma cópia de uma matriz de duas dimensões'''
@@ -46,10 +45,6 @@ def copiar_matriz(matriz):
 
 def ligar_matriz(matriz):
     '''liga a matriz passada'''
-    blocked()
-    _ligar_matriz(matriz)
-
-def _ligar_matriz(matriz):
     global omatrix
     mudou = False
     for y,linha in enumerate(zip(omatrix, matriz)):
@@ -68,10 +63,6 @@ def _ligar_matriz(matriz):
 
 def ligar_led(x, y, cor):
     '''liga um led na posição e cor especificada'''
-    blocked()
-    _ligar_led(x, y, cor)
-
-def _ligar_led(x, y, cor):
     global omatrix
     x = round(x)
     y = round(y)
@@ -90,11 +81,7 @@ def _ligar_led(x, y, cor):
 
 def carinha_feliz(cor):
     '''carinha feliz :)'''
-    blocked()
-    _carinha_feliz(cor)
-
-def _carinha_feliz(cor):
-    _apagar_leds()
+    apagar_leds()
     np[LED_MAP[3][1]] = cor
     np[LED_MAP[3][3]] = cor
     np[LED_MAP[1][0]] = cor
@@ -106,11 +93,7 @@ def _carinha_feliz(cor):
     
 def carinha_triste(cor):
     '''carinha triste :)'''
-    blocked()
-    _carinha_triste(cor)
-
-def _carinha_triste(cor):
-    _apagar_leds()
+    apagar_leds()
     np[LED_MAP[3][1]] = cor
     np[LED_MAP[3][3]] = cor
     np[LED_MAP[0][0]] = cor
@@ -122,10 +105,6 @@ def _carinha_triste(cor):
 
 def apagar_led(x, y):
     '''apaga um led na posição especificada'''
-    blocked()
-    _apagar_led(x, y)
-
-def _apagar_led(x, y):
     global omatrix
     x = round(x)
     y = round(y)
@@ -145,10 +124,6 @@ def _apagar_led(x, y):
 
 def apagar_leds():
     '''apaga todos os leds'''
-    blocked()
-    _apagar_leds()
-
-def _apagar_leds():
     i = 0
     while i < 5:
         j = 0
