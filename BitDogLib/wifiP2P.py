@@ -2,6 +2,7 @@ import network
 import socket
 import time
 import json
+import _thread
 from utime import ticks_ms, sleep
 from .utils import reiniciar
 from .block import block, unblock, blocked
@@ -142,6 +143,29 @@ def esperar_receber():
         dado = ler_wifi()
         if len(dado) > 0 and dado[2] != 1:
             return dado[1]
+        
+def definir_servidor_ou_cliente(grupo:int, is_servidor:bool):
+    _limpar_tela()
+    _escrever_tela("Estabelecendo", 0, 0)
+    _escrever_tela("Conexao", 0, 10)
+    _mostrar_tela()
+    
+    ssid = f'BitDogLab_{grupo}'
+    senha = f'BitDogLab_{grupo}'
+    
+    if is_servidor:
+        iniciar_servidor(ssid, senha, grupo)
+        servidor_conectar()
+        is_server = True
+    elif not is_servidor:
+        cliente_conectar(ssid, senha, grupo)
+    else:
+        reiniciar()
+    _thread.start_new_thread(receber_via_wifi, ())
+    _limpar_tela()
+    _escrever_tela("Conexao", 0, 0)
+    _escrever_tela("Estabelecida", 0, 10)
+    _mostrar_tela()
         
 def desligar_wifi():
     wlan.active(False)

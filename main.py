@@ -1,13 +1,6 @@
-import sys
-
 from BitDogLib import *
 from utime import ticks_us
 from time import sleep
-#Apenas para testes
-import _thread
-import json
-
-from BitDogLib.led import carinha_feliz, copiar_matriz
 
 try:
     HORIZONTAL = 0
@@ -19,8 +12,7 @@ try:
     BRANCO = [10,10,10]
     APAGADO = [0,0,0]
     
-    is_server = False
-    class Barco:
+    class Navio:
         def __init__(self, tamanho) -> None:
             self.x = 0
             self.y = 0
@@ -40,26 +32,26 @@ try:
                 b = b + 1
             return matriz
     
-    QUANTIDADE_DE_BARCOS = 6
-    barcos = [Barco(3),
-            Barco(3),
-            Barco(2),
-            Barco(2),
-            Barco(1),
-            Barco(1)]
+    QUANTIDADE_DE_NAVIOS = 6
+    navios = [Navio(3),
+            Navio(3),
+            Navio(2),
+            Navio(2),
+            Navio(1),
+            Navio(1)]
     
     
-    def posicionando_barco(novo_barco:Barco, barcos:list[Barco]):
-        matriz = criar_matriz_barcos(barcos)
+    def posicionando_navio(novo_navio:Navio, navios:list[Navio]):
+        matriz = criar_matriz_navios(navios)
         b = 0
         aceitavel = True
-        while b < novo_barco.tamanho:
-            if novo_barco.orientacao == HORIZONTAL:
-                x = novo_barco.x + b
-                y = novo_barco.y
+        while b < novo_navio.tamanho:
+            if novo_navio.orientacao == HORIZONTAL:
+                x = novo_navio.x + b
+                y = novo_navio.y
             else:
-                x = novo_barco.x
-                y = novo_barco.y + b
+                x = novo_navio.x
+                y = novo_navio.y + b
             x = round(x)
             y = round(y)
             if matriz[y][x] == VERDE:
@@ -71,15 +63,15 @@ try:
         ligar_matriz(matriz)
         return aceitavel
     
-    def criar_matriz_barcos(barcos:list[Barco]):
+    def criar_matriz_navios(navios:list[Navio]):
         matriz = criar_matriz()
-        for barco in barcos:
-            if barco.colocado:
-                matriz = barco.desenhar(matriz)
+        for navio in navios:
+            if navio.colocado:
+                matriz = navio.desenhar(matriz)
         return matriz
     
-    def desenhar_todos_os_barcos(barcos:list[Barco]):
-        matriz = criar_matriz_barcos(barcos)
+    def desenhar_todos_os_navios(navios:list[Navio]):
+        matriz = criar_matriz_navios(navios)
         ligar_matriz(matriz)
         return matriz
     
@@ -90,12 +82,12 @@ try:
         return (delta, old)
     
     def fase_posicionamento():
-        barcos_restantes = 6
-        for barco in barcos:
+        navios_restantes = 6
+        for navio in navios:
             limpar_tela()
             escrever_tela("FASE DE ", 0, 0)
             escrever_tela("POSICIONAMENTO", 0, 10)
-            escrever_tela(f'{barcos_restantes} navios', 0, 20)
+            escrever_tela(f'{navios_restantes} navios', 0, 20)
             escrever_tela('Restantes', 0, 30)
             mostrar_tela()
             old = ticks_us()
@@ -104,36 +96,36 @@ try:
                 x_end = 1
                 y_end = 1
                 if botao_A_pressionado():
-                    if barco.orientacao == VERTICAL:
-                        if round(barco.x) + barco.tamanho <= 5:
-                            barco.orientacao = HORIZONTAL
+                    if navio.orientacao == VERTICAL:
+                        if round(navio.x) + navio.tamanho <= 5:
+                            navio.orientacao = HORIZONTAL
                     else:
-                        if round(barco.y) + barco.tamanho <= 5:
-                            barco.orientacao = VERTICAL
+                        if round(navio.y) + navio.tamanho <= 5:
+                            navio.orientacao = VERTICAL
         
-                if barco.orientacao == VERTICAL:
-                    y_end = barco.tamanho
+                if navio.orientacao == VERTICAL:
+                    y_end = navio.tamanho
                 else:
-                    x_end = barco.tamanho
+                    x_end = navio.tamanho
         
                 jx = joystick_x()
-                if jx > 0 and barco.x <= 5-x_end:
-                    barco.x = barco.x + 1/250000*delta
-                if jx < 0 and barco.x >= 0:
-                    barco.x = barco.x - 1/250000*delta
+                if jx > 0 and navio.x <= 5-x_end:
+                    navio.x = navio.x + 1/250000*delta
+                if jx < 0 and navio.x >= 0:
+                    navio.x = navio.x - 1/250000*delta
     
                 jy = joystick_y()
-                if jy > 0 and barco.y <= 5-y_end:
-                    barco.y = barco.y + 1/250000*delta
-                if jy < 0 and barco.y >= 0:
-                    barco.y = barco.y - 1/250000*delta
+                if jy > 0 and navio.y <= 5-y_end:
+                    navio.y = navio.y + 1/250000*delta
+                if jy < 0 and navio.y >= 0:
+                    navio.y = navio.y - 1/250000*delta
     
-                pode = posicionando_barco(barco, barcos)
+                pode = posicionando_navio(navio, navios)
                 if botao_B_pressionado() and pode:
-                    barco.colocado = True
+                    navio.colocado = True
                     break
-            barcos_restantes = barcos_restantes - 1
-        matriz = desenhar_todos_os_barcos(barcos)
+            navios_restantes = navios_restantes - 1
+        matriz = desenhar_todos_os_navios(navios)
         return matriz
     
     def selecionar_posicao_tiro(matriz_tiros):
@@ -203,19 +195,19 @@ try:
         ganhou = selecionar_posicao_tiro(matriz_tiros)
         return ganhou
     
-    def checar_perdeu(matriz_barcos):
+    def checar_perdeu(matriz_navios):
         y = 0
         while y < 5:
             x = 0
             while x < 5:
-                if matriz_barcos[y][x] == VERDE:
+                if matriz_navios[y][x] == VERDE:
                     return False
                 x = x + 1
             y = y + 1
             
         return True
         
-    def receber_tiro(matriz_barcos):
+    def receber_tiro(matriz_navios):
         acertou = 0
         acabou = 0
         limpar_tela()
@@ -223,20 +215,20 @@ try:
         mostrar_tela()
         while True:
             acertou = 0
-            ligar_matriz(matriz_barcos)
+            ligar_matriz(matriz_navios)
             dado = esperar_receber()
             tiro_x = dado[0]
             tiro_y = dado[1]
-            if matriz_barcos[tiro_y][tiro_x] == VERDE:
+            if matriz_navios[tiro_y][tiro_x] == VERDE:
                 acertou = 1
-                matriz_barcos[tiro_y][tiro_x] = VERMELHO
+                matriz_navios[tiro_y][tiro_x] = VERMELHO
                 som_explosao()
             else:
-                matriz_barcos[tiro_y][tiro_x] = AZUL
-                ligar_matriz(matriz_barcos)
+                matriz_navios[tiro_y][tiro_x] = AZUL
+                ligar_matriz(matriz_navios)
                 som_agua()
                 
-            if checar_perdeu(matriz_barcos):
+            if checar_perdeu(matriz_navios):
                 acabou = 1
                 
             enviar_via_wifi([acertou, acabou])
@@ -256,7 +248,7 @@ try:
         return False
     
     def defender():
-        acabou = receber_tiro(matriz_barcos)
+        acabou = receber_tiro(matriz_navios)
         if acabou:
             limpar_tela()
             escrever_tela("PERDEU",0,0)
@@ -284,9 +276,9 @@ try:
             if acabou:
                 break
     
-    def fase_batalha():
+    def fase_batalha(time):
         matriz_tiros = criar_matriz()
-        if is_server:
+        if is_servidor:
             time_A_batalha(matriz_tiros)
         else:
             time_B_batalha(matriz_tiros)
@@ -300,9 +292,9 @@ try:
         
         while True:
             if botao_A_pressionado():
-                return 0
+                return True
             if botao_B_pressionado():
-                return 1
+                return False
     
     def escolher_grupo():
     
@@ -326,38 +318,6 @@ try:
             if jx < 0 and numero >= 0:
                 numero = numero - 1/250000*delta
     
-    
-    def iniciar_time_A(ssid, senha, num):
-        iniciar_servidor(ssid, senha, num)
-        servidor_conectar()
-    
-    def iniciar_time_B(ssid, senha, num):
-        cliente_conectar(ssid, senha, num)
-        
-    def fase_busca_inimigo():
-        global is_server
-        time = escolher_lado()
-        numero = escolher_grupo()
-        limpar_tela()
-        escrever_tela("Estabelecendo", 0, 0)
-        escrever_tela("Conexao", 0, 10)
-        mostrar_tela()
-        
-        ssid = f'BitDogLab_{numero}'
-        senha = f'BitDogLab_{numero}'
-        if time == 0:
-            iniciar_time_A(ssid, senha, numero)
-            is_server = True
-        elif time == 1:
-            iniciar_time_B(ssid, senha, numero)
-        else:
-            reiniciar()
-        _thread.start_new_thread(receber_via_wifi, ())
-        limpar_tela()
-        escrever_tela("Conexao", 0, 0)
-        escrever_tela("Estabelecida", 0, 10)
-        mostrar_tela()
-        
     def mandar_pronto():
         apagar_leds()
         limpar_tela()
@@ -368,19 +328,24 @@ try:
         enviar_via_wifi([1])
         esperar_receber()
     
+    def finalizar_jogo():
+        sleep(2)
+        desligar_wifi()
+        limpar_tela()
+        escrever_tela('Reinicie',0,0)
+        escrever_tela('para jogar',0,20)
+        escrever_tela('novamente',0,30)
+        mostrar_tela()
+        apagar_leds()
+        
     desligar_wifi()
-    fase_busca_inimigo()
-    matriz_barcos = fase_posicionamento()
+    is_servidor = escolher_lado()
+    numero = escolher_grupo()
+    definir_servidor_ou_cliente(numero, is_servidor)
+    matriz_navios = fase_posicionamento()
     mandar_pronto()
-    fase_batalha()
-    sleep(2)
-    desligar_wifi()
-    limpar_tela()
-    escrever_tela('Reinicie',0,0)
-    escrever_tela('para jogar',0,20)
-    escrever_tela('novamente',0,30)
-    mostrar_tela()
-    apagar_leds()
+    fase_batalha(is_servidor)
+    finalizar_jogo()
 except:
     apagar_leds()
     limpar_tela()
