@@ -44,55 +44,59 @@ def mostrar_tela():
 def explosao_oled():
     '''roda animação de explosão'''
     # ler arquivo explosão
-    with open('explosion.pbm', 'rb') as f:
-        explosion_pbm = f.read()
-    play_pbm(explosion_pbm)
+    f = open('explosion.pbm', 'rb')
+    play_pbm(f)
+    f.close()
 
 def agua_oled():
     '''roda animação de agua'''
     # ler arquivo agua
-    with open('watersplash.pbm', 'rb') as f:
-        watersplash_pbm = f.read()
-    play_pbm(watersplash_pbm)
+    f = open('watersplash.pbm', 'rb')
+    play_pbm(f)
+    f.close()
 
-def read_until(inp:bytes, start, end_value):
-    '''lê um array de bytes até encontrar o valor end_value
-    retorna os bytes lidos e a posição depois do valor end_value'''
-    i = len(inp)
-    for i, byte in enumerate(inp[start:], start):
-        if byte == end_value:
-            return (inp[start:i],i+1)
-    return ('',i)
+def read_until(f, end_value):
+    '''lê bytes de um arquivo até encontrar o valor end_value
+    retorna os bytes lidos'''
+    byte = f.read(1)
+    ret = []
+    while byte and byte != end_value:
+        ret.append(byte)
+        byte = f.read(1)
+    return b''.join(ret)
 
-def play_pbm(inp):
+def play_pbm(f):
     '''exibe um ou multiplos frames de um arquivo pbm'''
-    l = len(inp)
     x = 128 # largura da imagem valor default apenas para o LSP não reclamar
     y = 64 # altura da imagem valor default apenas para o LSP não reclamar
-    start = 0 # define de onde começar a ler no arquivo
-    linebreak = 10 # valor em byte da quebra de linha
-    while start < l:
-        # lê a primeira linha do pbm corresponde ao tipo de pbm nesse caso P4
-        value, start = read_until(inp, start, linebreak)
+    linebreak = b'\n' # valor em byte da quebra de linha
+    value = 1
+    while value:
+        # lê a primeira linha do pbm corresponde ao tipo de pbm
+        value = read_until(f, linebreak)
+
+        # verificar se o arquivo acabou
+        if not value:
+            return
 
         # verificar que imagem está no formato correto
         if value != b'P4':
-            print(value)
             raise(Exception('arquivo inválido precisa ser no formato P4'))
 
         # ler tamanho da imagem
-        value, start = read_until(inp, start, linebreak)
+        value = read_until(f, linebreak)
+        # verificar se o arquivo acabou
+        if not value:
+            raise(Exception('arquivo em formato estranho'))
         x,y = map(int,value.split())
 
-
         # ler imagem
-        end = start + x*y//8 # cada bit representa um pixel por isso dividimos pelo valor de bits em um byte para obter a quantidade de bytes até o final da imagem
-        buffer = bytearray(inp[start:end]) #
-        start = end
+        end = x*y//8 # cada bit representa um pixel por isso dividimos pelo valor de bits em um byte para obter a quantidade de bytes até o final da imagem
+        buffer = bytearray(f.read(end))
 
         # exibir imagem no display oled
         fb = framebuf.FrameBuffer(buffer, x, y, framebuf.MONO_HLSB)
         oled.fill(0)
         oled.blit(fb, 8, 0)
         oled.show()
-        utime.sleep_ms(35)
+        utime.sleep_ms(15)

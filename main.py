@@ -1,6 +1,5 @@
 from BitDogLib import *
 from utime import ticks_us
-from time import sleep
 
 try:
     HORIZONTAL = 0
@@ -177,8 +176,10 @@ try:
         acertou = dado[0]
         acabou = dado[1]
         if acertou == 0:
+            agua_oled()
             som_agua()
         elif acertou == 1: 
+            explosao_oled()
             som_explosao()
         return acertou, acabou
     
@@ -222,21 +223,26 @@ try:
             if matriz_navios[tiro_y][tiro_x] == VERDE:
                 acertou = 1
                 matriz_navios[tiro_y][tiro_x] = VERMELHO
-                som_explosao()
             else:
                 matriz_navios[tiro_y][tiro_x] = AZUL
                 ligar_matriz(matriz_navios)
-                som_agua()
-                
+
             if checar_perdeu(matriz_navios):
                 acabou = 1
-                
             enviar_via_wifi([acertou, acabou])
+
+            if acertou:
+                explosao_oled()
+                som_explosao()
+            else:
+                agua_oled()
+                som_agua()
+
             if acertou == 0 or acabou == 1:
                 break
-            
+
         return acabou
-    
+
     def atacar(matriz_tiros):
         acabou = dar_tiro(matriz_tiros)
         if acabou:
@@ -329,7 +335,7 @@ try:
         esperar_receber()
     
     def finalizar_jogo():
-        sleep(2)
+        dormir(2)
         desligar_wifi()
         limpar_tela()
         escrever_tela('Reinicie',0,0)
@@ -346,7 +352,11 @@ try:
     mandar_pronto()
     fase_batalha(is_servidor)
     finalizar_jogo()
-except:
+except Exception as e:
+    import sys
+    with open('error.log', 'w') as f:
+        sys.print_exception(e, f)
+    sys.print_exception(e)
     apagar_leds()
     limpar_tela()
     escrever_tela('Ocorreu',0,0)
