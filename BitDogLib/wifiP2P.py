@@ -72,9 +72,24 @@ def cliente_conectar(ssid:str, senha:str, grupo:int):
     wlan.connect(ssid, senha)
     
     # Aguarda conexão ao servidor
-    while not wlan.isconnected():
-        print("Tentando conectar")
-        time.sleep(1)
+    while True:
+        # se não conseguir estabelecer a conexão em 7 segundos reiniciamos a conexão
+        for i in range(7):
+            print("Tentando conectar")
+            # se a conexão estiver estabelicida não precisamos esperar o resto dos 7 segundos
+            if wlan.isconnected():
+                break
+            time.sleep(1)
+        # se a conexão estiver estabelicida saimos do loop
+        if wlan.isconnected():
+            break
+        print('Tentando novamente')
+        # reiniciar conexão do zero
+        del wlan
+        wlan = network.WLAN(network.STA_IF)
+        wlan.active(True)
+        wlan.ifconfig((f'{grupo}.200.200.2', '255.255.255.252','0.0.0.0','0.0.0.0'))
+        wlan.connect(ssid, senha)
 
     # Conecta ao servidor
     addr = socket.getaddrinfo(f'{grupo}.200.200.1', 8080)[0][-1]
