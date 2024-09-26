@@ -10,6 +10,7 @@ from .utils import reiniciar
 from .led import carinha_triste
 from .oled import limpar_tela, mostrar_tela, escrever_tela
 
+
 # A variável fila será usada para adicionar as mensagens que chegam
 fila = []
 # Objeto network

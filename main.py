@@ -132,6 +132,9 @@ try:
         tiro_x = 2
         tiro_y = 2
         while True:
+            limpar_tela()
+            escrever_tela("FASE DE ATAQUE", 0, 0)
+            mostrar_tela()
             delta, old = tempo_de_jogo(old)
             jx = joystick_x()
             jy = joystick_y()
@@ -190,9 +193,6 @@ try:
     
     def dar_tiro(matriz_tiros):
         ganhou = False
-        limpar_tela()
-        escrever_tela("FASE DE ATAQUE", 0, 0)
-        mostrar_tela()
         ganhou = selecionar_posicao_tiro(matriz_tiros)
         return ganhou
     
@@ -211,10 +211,10 @@ try:
     def receber_tiro(matriz_navios):
         acertou = 0
         acabou = 0
-        limpar_tela()
-        escrever_tela("FASE DE DEFESA", 0, 0)
-        mostrar_tela()
         while True:
+            limpar_tela()
+            escrever_tela("FASE DE DEFESA", 0, 0)
+            mostrar_tela()
             acertou = 0
             ligar_matriz(matriz_navios)
             dado = esperar_receber()
@@ -223,20 +223,18 @@ try:
             if matriz_navios[tiro_y][tiro_x] == VERDE:
                 acertou = 1
                 matriz_navios[tiro_y][tiro_x] = VERMELHO
+                explosao_oled()
+                som_explosao()
             else:
                 matriz_navios[tiro_y][tiro_x] = AZUL
                 ligar_matriz(matriz_navios)
+                agua_oled()
+                som_agua()
 
             if checar_perdeu(matriz_navios):
                 acabou = 1
             enviar_via_wifi([acertou, acabou])
 
-            if acertou:
-                explosao_oled()
-                som_explosao()
-            else:
-                agua_oled()
-                som_agua()
 
             if acertou == 0 or acabou == 1:
                 break
@@ -356,7 +354,7 @@ except Exception as e:
     import sys
     with open('error.log', 'w') as f:
         sys.print_exception(e, f)
-    sys.print_exception(e)
+    print(e)
     apagar_leds()
     limpar_tela()
     escrever_tela('Ocorreu',0,0)

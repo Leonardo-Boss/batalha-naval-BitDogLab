@@ -2,6 +2,7 @@ from machine import Pin, SoftI2C
 from ssd1306 import SSD1306_I2C
 import framebuf
 import utime
+import gc
 
 # Inicia o I2C, passando os pinos de SCL e SDA
 i2c = SoftI2C(scl=Pin(15), sda=Pin(14))
@@ -67,8 +68,6 @@ def read_until(f, end_value):
 
 def play_pbm(f):
     '''exibe um ou multiplos frames de um arquivo pbm'''
-    x = 128 # largura da imagem valor default apenas para o LSP não reclamar
-    y = 64 # altura da imagem valor default apenas para o LSP não reclamar
     linebreak = b'\n' # valor em byte da quebra de linha
     value = 1
     while value:
@@ -96,7 +95,12 @@ def play_pbm(f):
 
         # exibir imagem no display oled
         fb = framebuf.FrameBuffer(buffer, x, y, framebuf.MONO_HLSB)
+        del x
+        del y
+        del buffer
         oled.fill(0)
         oled.blit(fb, 8, 0)
+        del fb
         oled.show()
         utime.sleep_ms(15)
+        gc.collect()
