@@ -188,13 +188,16 @@ def ler_ack()->list:
             return fila.pop(i)
     return []
 
+def teste_forca_wifi():
+    return wlan.status('rssi')
+
 # Essa função faz com que a thread principal espere por uma mensagem, ela verifica se 
 # tem uma nova mensagem a cada 2s. Além disso também verifica se a conexão não foi perdida
 def esperar_receber():
     global wlan
     old = ticks_ms()
     while True:
-        #print(wlan.status('rssi'))
+        # print(wlan.status('rssi'))
         new = ticks_ms()
         if new - old >= 2000:
             old = new

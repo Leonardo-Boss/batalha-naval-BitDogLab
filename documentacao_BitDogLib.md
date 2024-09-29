@@ -112,20 +112,6 @@ Essa função retorna se o botão do joystick está pressionado apenas uma vez p
 ## valor_botao_joystick()
 retorna o valor do botão
 
-## iniciar_servidor(ssid:str, senha:str, grupo:int)
-Essa função inicia a BitDogLab como servidor
-Parâmetros:
-- ssid: nome da rede wifi
-- senha: senha da rede wifi
-- grupo: número de 0 a 255 que representa o primeiro trio de números do IP
-## servidor_conectar()
-Essa função abre a porta 8080 e espera pela conexão
-## cliente_conectar(ssid:str, senha:str, grupo:int)
-Essa função inicia a BitDogLab como cliente
-Parâmetros:
-- ssid: nome da rede wifi
-- senha: senha da rede wifi
-- grupo: número de 0 a 255 que representa o primeiro trio de números do IP
 ## enviar_via_wifi(msg:list)
 Essa função envia uma mensagem via wifi
 Parâmetros:
@@ -139,3 +125,5 @@ Essa função estabelece uma conexão entre duas BitDogLab
 Parâmetros:
 - grupo: número de 0 à 255 que define os três primeiros dígitos do IP
 - is_servidor: define se é servidor (`True`) ou não (`False`)
+## teste_forca_wifi()
+Está função retorna qual o valor RSSI da conexão

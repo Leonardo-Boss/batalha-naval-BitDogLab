@@ -4,4 +4,4 @@ from .buttons import botao_A_solto, botao_B_solto, botao_A_pressionado, botao_B_
 from .buzzer import som_morreu, som_explosao, som_agua
 from .utils import numero_aleatorio, loop, ler_arquivo, escrever_arquivo, reiniciar, dormir
 from .joystick import joystick_x, joystick_y, botao_joystick_solto, botao_joystick_pressionado, valor_botao_joystick
-from .wifiP2P import iniciar_servidor, servidor_conectar, cliente_conectar, enviar_via_wifi, desligar_wifi, esperar_receber, definir_servidor_ou_cliente
+from .wifiP2P import  enviar_via_wifi, desligar_wifi, esperar_receber, definir_servidor_ou_cliente, teste_forca_wifi
