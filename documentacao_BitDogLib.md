@@ -23,8 +23,15 @@ Essa função liga a matriz passada
 Parâmetros:
 - matriz: matriz a ser ligada
     - exemplo:
-    [[[r,g,b],[r,g,b]],
-      [r,g,b],[r,g,b]]]
+
+    [
+
+     [[r,g,b],[r,g,b]],
+
+     [[r,g,b],[r,g,b]]
+
+    ]
+
 onde r,g e b são os valores das cores vermelho, verde e azul respectivamente
 ## carinha_feliz(cor)
 Pinta uma carinha feliz na matriz de LEDs
