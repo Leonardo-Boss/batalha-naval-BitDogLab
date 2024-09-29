@@ -59,7 +59,7 @@ roda animação de agua
 exibe um ou multiplos frames de um arquivo pbm
 Parâmetros:
 - arquivo: string com o nome do arquivo a ser exibido
-- duracao_frame: a duração de cada frame em milisegundos padrão é 15.
+- duracao_frame: a duração de cada frame em milissegundos padrão é 15.
 
 ## botao_A_pressionado()
 Essa função retorna `True` (verdade) uma vez quando o botão for pressionado, e `False` (falso) nos outros casos.
