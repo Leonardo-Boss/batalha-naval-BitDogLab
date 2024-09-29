@@ -44,17 +44,11 @@ def mostrar_tela():
 
 def explosao_oled():
     '''roda animação de explosão'''
-    # ler arquivo explosão
-    f = open('explosion.pbm', 'rb')
-    play_pbm(f)
-    f.close()
+    play_pbm('explosion.pbm')
 
 def agua_oled():
     '''roda animação de agua'''
-    # ler arquivo agua
-    f = open('watersplash.pbm', 'rb')
-    play_pbm(f)
-    f.close()
+    play_pbm('watersplash.pbm')
 
 def read_until(f, end_value):
     '''lê bytes de um arquivo até encontrar o valor end_value
@@ -66,8 +60,9 @@ def read_until(f, end_value):
         byte = f.read(1)
     return b''.join(ret)
 
-def play_pbm(f):
+def play_pbm(arquivo, duracao_frame=15):
     '''exibe um ou multiplos frames de um arquivo pbm'''
+    f = open(arquivo, 'rb')
     linebreak = b'\n' # valor em byte da quebra de linha
     value = 1
     while value:
@@ -102,5 +97,6 @@ def play_pbm(f):
         oled.blit(fb, 8, 0)
         del fb
         oled.show()
-        utime.sleep_ms(15)
+        utime.sleep_ms(duracao_frame)
         gc.collect()
+    f.close()

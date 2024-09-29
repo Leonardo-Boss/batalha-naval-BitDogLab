@@ -8,7 +8,7 @@ yAxis = ADC(Pin(26))
 button = Pin(22,Pin.IN, Pin.PULL_UP)
 
 # Essa função retorna se o valor em X é para cima ou para baixo
-# Para isso determnamos que abaixo de 600 é para baixo
+# Para isso determinamos que abaixo de 600 é para baixo
 # Acima de 6000 pra cima
 def joystick_x():
     xValue = xAxis.read_u16()
@@ -29,12 +29,13 @@ def joystick_y():
         return 1
     return 0
 
+# retorna o valor do botão
 def valor_botao_joystick():
     return button.value()
 
 # Variável de controle
 button_pressed = 1
-#Essa função retorna se o joystick está pressionado
+# Essa função retorna se o botão do joystick está pressionado apenas uma vez por vez que é pressionado
 def botao_joystick_pressionado():
     global button_pressed
     r = False
@@ -46,7 +47,7 @@ def botao_joystick_pressionado():
 
 # Variável de controle
 button_released = 1
-#Essa função retorna se o joystick está solto
+# Essa função retorna se o botão do joystick foi solto
 def botao_joystick_solto():
     global button_released
     r = False

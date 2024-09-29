@@ -26,14 +26,14 @@ pacotes_recebidos = []
 # Essa função inicia a BitDogLab como servidor
 def iniciar_servidor(ssid:str, senha:str, grupo:int):
     global wlan
-    # Uma vez que grupo repreta o primeiro trio do IP, ele apenas pode ser de 0 à 255
+    # Uma vez que grupo representa o primeiro trio do IP, ele apenas pode ser de 0 à 255
     if grupo < 0 or grupo > 255:
         print('grupo inválido')
         reiniciar()
     print('Iniciando Server')
     # Configura o BitoDogLab como servidor
     wlan = network.WLAN(network.AP_IF)
-    # Adiciona nome da rede e senha do servidore
+    # Adiciona nome da rede e senha do servidor
     wlan.config(essid=ssid, password=senha)
     # Inicia a rede
     wlan.active(True)
@@ -137,7 +137,7 @@ def enviar_via_wifi(msg:list):
     global pacote
     # A mensagem é formada por um ID, a mensagem e a flag que indica se é um ACK
     msg = [pacote, msg, 0]
-    # A mesnagem é convertida para JSON
+    # A mensagem é convertida para JSON
     pck = f'{json.dumps(msg)}\n'
     # Id do pacote que será enviado
     pacote_enviado = pacote
@@ -189,7 +189,7 @@ def ler_ack()->list:
     return []
 
 # Essa função faz com que a thread principal espere por uma mensagem, ela verifica se 
-# tem uma nova mensagem a cada 2s. Além disso também verifica se aa conexão não foi perdida
+# tem uma nova mensagem a cada 2s. Além disso também verifica se a conexão não foi perdida
 def esperar_receber():
     global wlan
     old = ticks_ms()
@@ -219,10 +219,6 @@ def esperar_receber():
 # Essa função recebe o grupo(primeiro trio do IP) e se é um servidor
 # Então inicializa-o corretamete, Mostrando no OLED informações necessárias   
 def definir_servidor_ou_cliente(grupo:int, is_servidor:bool):
-    limpar_tela()
-    escrever_tela("Estabelecendo", 0, 0)
-    escrever_tela("Conexao", 0, 10)
-    mostrar_tela()
     
     # Defini nome da rede
     ssid = f'BitDogLab_{grupo}'
@@ -231,10 +227,18 @@ def definir_servidor_ou_cliente(grupo:int, is_servidor:bool):
     
     # Caso for um servidor, inicia como um servidor
     if is_servidor:
+        limpar_tela()
+        escrever_tela("Aguardando", 0, 0)
+        escrever_tela("Conexão", 0, 10)
+        mostrar_tela()
         iniciar_servidor(ssid, senha, grupo)
         servidor_conectar()
     # Caso não for um servidor, inicia como cliente
     else:        
+        limpar_tela()
+        escrever_tela("Tentando", 0, 0)
+        escrever_tela("Conectar", 0, 10)
+        mostrar_tela()
         cliente_conectar(ssid, senha, grupo)
     # Inicia no segundo core a função receber_via_wifi
     _thread.start_new_thread(receber_via_wifi, ())
