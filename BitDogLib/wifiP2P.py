@@ -229,7 +229,7 @@ def definir_servidor_ou_cliente(grupo:int, is_servidor:bool):
     if is_servidor:
         limpar_tela()
         escrever_tela("Aguardando", 0, 0)
-        escrever_tela("Conexão", 0, 10)
+        escrever_tela("Conexao", 0, 10)
         mostrar_tela()
         iniciar_servidor(ssid, senha, grupo)
         servidor_conectar()
